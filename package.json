@@ -1,0 +1,48 @@
+{
+  "name": "agentic-traffic-market",
+  "version": "1.0.0",
+  "description": "AI Agent-based P2P Traffic Market using JPYC on Avalanche",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "tsx server.ts",
+    "build": "next build",
+    "start": "NODE_ENV=production tsx server.ts",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "16.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@ai-sdk/google": "^1.0.8",
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "ai": "^4.0.38",
+    "viem": "^2.21.44",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "zod": "^3.24.1",
+    "jotai": "^2.10.3",
+    "lucide-react": "^0.468.0",
+    "react-map-gl": "^7.1.7",
+    "mapbox-gl": "^3.8.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.7.2",
+    "tsx": "^4.19.2",
+    "tailwindcss": "^3.4.17",
+    "postcss": "^8.4.49",
+    "autoprefixer": "^10.4.20",
+    "server-only": "^0.0.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

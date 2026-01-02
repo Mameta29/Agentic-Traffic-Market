@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+  }
+
+  body {
+    @apply bg-slate-950 text-white font-mono;
+  }
+}
+
+@layer utilities {
+  /* サイバーパンクグロー効果 */
+  .glow-green {
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.5), 0 0 20px rgba(0, 255, 65, 0.3);
+  }
+
+  .glow-pink {
+    box-shadow: 0 0 10px rgba(255, 0, 110, 0.5), 0 0 20px rgba(255, 0, 110, 0.3);
+  }
+
+  .glow-cyan {
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.5), 0 0 20px rgba(0, 245, 255, 0.3);
+  }
+
+  /* ターミナル風テキスト */
+  .terminal-text {
+    @apply font-mono text-sm leading-relaxed;
+  }
+
+  /* スキャンライン効果 (オプション) */
+  .scanline {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scanline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 50%,
+      rgba(0, 255, 65, 0.03) 51%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    animation: scan 8s linear infinite;
+  }
+
+  @keyframes scan {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 0 100%;
+    }
+  }
+}
+
