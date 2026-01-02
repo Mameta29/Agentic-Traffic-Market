@@ -7,6 +7,9 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "next build",
+    "build:contracts": "cd contracts && forge build",
+    "test:contracts": "cd contracts && forge test",
+    "deploy:contracts": "cd contracts && forge script script/Deploy.s.sol --rpc-url avalanche_fuji --broadcast",
     "start": "NODE_ENV=production tsx server.ts",
     "lint": "biome check .",
     "format": "biome format --write .",

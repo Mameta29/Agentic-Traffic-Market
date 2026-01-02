@@ -2,6 +2,7 @@ import 'server-only';
 
 import type { Agent, AgentState } from '@/types/agent';
 import { setCongestion, clearCongestion } from '@/mcp-server/tools/evaluate-congestion';
+import { getAgentInfo, agentExists } from '../lib/agent-registry';
 
 /**
  * エージェント移動シミュレーション
@@ -25,33 +26,108 @@ const state: SimulationState = {
 
 /**
  * エージェントの初期化
+ * Agent NFT (ERC-8004) から情報を取得
  */
-export function initializeAgents(): Agent[] {
-  const agents: Agent[] = [
-    {
-      id: 'agent-a',
-      role: 'buyer',
-      address: '0x1234567890123456789012345678901234567890', // デモ用
-      state: 'idle',
-      position: { lat: 35.6762, lng: 139.6503 }, // 東京駅
-      destination: { lat: 35.6812, lng: 139.7671 }, // 目的地
-      balance: '5000',
-    },
-    {
-      id: 'agent-b',
-      role: 'seller',
-      address: '0x0987654321098765432109876543210987654321', // デモ用
-      state: 'idle',
-      position: { lat: 35.6812, lng: 139.7671 }, // 目的地（Agent Aと交差）
-      destination: { lat: 35.6762, lng: 139.6503 },
-      balance: '3000',
-    },
-  ];
+export async function initializeAgents(): Promise<Agent[]> {
+  console.log('[Simulation] Initializing agents from blockchain...');
 
-  // 状態に保存
-  agents.forEach((agent) => state.agents.set(agent.id, agent));
+  try {
+    // Agent NFT #1 と #2 が登録済みか確認
+    const agent1Exists = await agentExists(1);
+    const agent2Exists = await agentExists(2);
 
-  return agents;
+    let agents: Agent[];
+
+    if (agent1Exists && agent2Exists) {
+      // ブロックチェーンからAgent情報を取得
+      console.log('[Simulation] Loading agents from NFT Registry...');
+      
+      const agent1Info = await getAgentInfo(1);
+      const agent2Info = await getAgentInfo(2);
+
+      agents = [
+        {
+          id: 'agent-1',
+          role: agent1Info.role,
+          address: agent1Info.wallet,
+          state: 'idle',
+          position: { lat: 35.6762, lng: 139.6503 }, // 東京駅
+          destination: { lat: 35.6812, lng: 139.7671 },
+          balance: '5000',
+        },
+        {
+          id: 'agent-2',
+          role: agent2Info.role,
+          address: agent2Info.wallet,
+          state: 'idle',
+          position: { lat: 35.6812, lng: 139.7671 },
+          destination: { lat: 35.6762, lng: 139.6503 },
+          balance: '3000',
+        },
+      ];
+
+      console.log('[Simulation] Loaded agents from NFT:', {
+        agent1: { id: 1, wallet: agent1Info.wallet, role: agent1Info.role },
+        agent2: { id: 2, wallet: agent2Info.wallet, role: agent2Info.role },
+      });
+    } else {
+      // Agent NFTが未登録の場合、デフォルト値を使用（開発時）
+      console.warn('[Simulation] Agent NFTs not found, using default demo agents');
+      
+      agents = [
+        {
+          id: 'agent-a',
+          role: 'buyer',
+          address: '0x1234567890123456789012345678901234567890', // デモ用
+          state: 'idle',
+          position: { lat: 35.6762, lng: 139.6503 },
+          destination: { lat: 35.6812, lng: 139.7671 },
+          balance: '5000',
+        },
+        {
+          id: 'agent-b',
+          role: 'seller',
+          address: '0x0987654321098765432109876543210987654321', // デモ用
+          state: 'idle',
+          position: { lat: 35.6812, lng: 139.7671 },
+          destination: { lat: 35.6762, lng: 139.6503 },
+          balance: '3000',
+        },
+      ];
+    }
+
+    // 状態に保存
+    agents.forEach((agent) => state.agents.set(agent.id, agent));
+
+    return agents;
+  } catch (error) {
+    console.error('[Simulation] Error initializing agents:', error);
+    
+    // エラー時はデフォルトエージェントを返す
+    const defaultAgents: Agent[] = [
+      {
+        id: 'agent-a',
+        role: 'buyer',
+        address: '0x1234567890123456789012345678901234567890',
+        state: 'idle',
+        position: { lat: 35.6762, lng: 139.6503 },
+        destination: { lat: 35.6812, lng: 139.7671 },
+        balance: '5000',
+      },
+      {
+        id: 'agent-b',
+        role: 'seller',
+        address: '0x0987654321098765432109876543210987654321',
+        state: 'idle',
+        position: { lat: 35.6812, lng: 139.7671 },
+        destination: { lat: 35.6762, lng: 139.6503 },
+        balance: '3000',
+      },
+    ];
+
+    defaultAgents.forEach((agent) => state.agents.set(agent.id, agent));
+    return defaultAgents;
+  }
 }
 
 /**

@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         });
 
       case 'initialize':
-        const agents = initializeAgents();
+        const agents = await initializeAgents();
         return Response.json({ success: true, agents });
 
       default:

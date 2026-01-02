@@ -48,38 +48,33 @@ root/
 
 ## 🚀 セットアップ & 起動
 
-### 1. 依存関係のインストール
+**完全なデプロイ手順は `DEPLOYMENT_GUIDE.md` を参照してください。**
+
+### クイックスタート（開発モード）
 
 ```bash
+# 1. 依存関係のインストール
 pnpm install
+
+# 2. 環境変数設定（最小限）
+cp .env.local.example .env.local
+# .env.local を編集して最低限以下を設定:
+# - GOOGLE_GENERATIVE_AI_API_KEY=your-key
+
+# 3. 開発サーバー起動
+pnpm dev
 ```
 
-### 2. 環境変数の設定
-
-`.env.example`を`.env`にコピーし、必要な値を設定:
+### 完全デプロイ（ブロックチェーン統合）
 
 ```bash
-# Google Vertex AI (必須)
-GOOGLE_GENERATIVE_AI_API_KEY=your-api-key
+# 1. スマートコントラクトをデプロイ
+cd contracts
+forge script script/Deploy.s.sol --rpc-url avalanche_fuji --broadcast
 
-# Avalanche Fuji Testnet
-AVALANCHE_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc
-
-# エージェント用プライベートキー (デモ用)
-# メタマスクでFujiテストネット用のアカウントを2つ作成
-AGENT_A_PRIVATE_KEY=0x...
-AGENT_B_PRIVATE_KEY=0x...
-
-# JPYC Contract (Fuji上に実際のJPYCがない場合、テスト用ERC20を使用)
-JPYC_CONTRACT_ADDRESS=0x...
-
-# Mapbox (オプション - マップ表示用)
-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.eyJ1...
-```
-
-### 3. 開発サーバー起動
-
-```bash
+# 2. デプロイされたアドレスを.env.localに設定
+# 3. Agent NFT登録（詳細はDEPLOYMENT_GUIDE.md参照）
+# 4. アプリ起動
 pnpm dev
 ```
 

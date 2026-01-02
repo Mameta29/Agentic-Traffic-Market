@@ -2,7 +2,10 @@ import 'server-only';
 
 import { streamAgentThinking } from '../actions/agent';
 import { resolveCollision } from './traffic-simulation';
+import { executeEIP7702Bid } from '../lib/eip-7702';
+import { env } from '../config/env';
 import type { CoreMessage } from 'ai';
+import type { Address } from 'viem';
 
 /**
  * 2つのAIエージェント間の自動ネゴシエーションを調整
@@ -87,9 +90,46 @@ export async function startNegotiation(
       console.log('[Negotiation] ✅ Offer ACCEPTED by Seller');
       transcript.push('[System] Negotiation successful! Payment processing...');
 
-      // Step 3: Settlement (ここでは簡略化、実際はtransfer_jpycを呼ぶ)
-      console.log('[Negotiation] Step 3: Processing payment (simulated)');
-      transcript.push('[System] 400 JPYC transferred from Agent A to Agent B');
+      // Step 3: Settlement - 実際のブロックチェーン決済実行
+      console.log('[Negotiation] Step 3: Processing actual blockchain payment...');
+      transcript.push('[System] Executing on-chain JPYC transfer...');
+
+      try {
+        // 環境変数チェック
+        if (!env.agentAPrivateKey) {
+          throw new Error('AGENT_A_PRIVATE_KEY not configured');
+        }
+
+        if (!env.jpycContractAddress || env.jpycContractAddress === '0x0000000000000000000000000000000000000000') {
+          console.warn('[Negotiation] JPYC contract not deployed, simulating payment');
+          transcript.push('[System] ⚠️ Simulated: 400 JPYC transferred (contracts not deployed)');
+        } else {
+          // 実際のEIP-7702トランザクション実行
+          const txHash = await executeEIP7702Bid(
+            env.agentAPrivateKey as `0x${string}`,
+            sellerAddress as Address,
+            400, // JPYC amount
+            locationId
+          );
+
+          transcript.push(`[System] ✅ Transaction confirmed: ${txHash}`);
+          transcript.push(`[System] 400 JPYC transferred from ${buyerAddress} to ${sellerAddress}`);
+          console.log(`[Negotiation] Payment successful: ${txHash}`);
+        }
+      } catch (error) {
+        console.error('[Negotiation] Payment error:', error);
+        transcript.push(`[Error] Payment failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        
+        // 決済失敗でもデモを続行（開発時）
+        if (process.env.NODE_ENV === 'development') {
+          transcript.push('[System] Continuing demo despite payment error (development mode)');
+        } else {
+          return {
+            success: false,
+            transcript,
+          };
+        }
+      }
 
       // Step 4: Resolution
       console.log('[Negotiation] Step 4: Resolving collision');

@@ -49,4 +49,15 @@ next-env.d.ts
 # AI Rules & Documentation (keep private)
 CURSOR_RULES.md
 docs/
+DEPLOYMENT_GUIDE.md
+ARCHITECTURE.md
+IMPLEMENTATION_PLAN.md
+docs/architecture/SYSTEM_DESIGN.md
+
+# Foundry / Smart Contracts
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/lib/
+contracts/.env
 

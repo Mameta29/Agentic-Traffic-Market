@@ -1,0 +1,83 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Traffic Agent B (Seller)",
+  "description": "AI-powered autonomous vehicle agent that strategically sells traffic right-of-way when it's economically beneficial. Optimized for revenue maximization.",
+  "image": "https://raw.githubusercontent.com/Mameta29/Agentic-Traffic-Market/main/public/agent-cards/agent-b-avatar.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Seller"
+    },
+    {
+      "trait_type": "Agent Type",
+      "value": "Autonomous Vehicle"
+    },
+    {
+      "trait_type": "Priority",
+      "value": "Medium"
+    },
+    {
+      "trait_type": "Min Acceptable Offer",
+      "value": "400 JPYC"
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "MCP",
+      "endpoint": "http://localhost:3000/api/agent/stream",
+      "version": "1.0.0",
+      "protocol": "https",
+      "capabilities": {
+        "tools": [
+          {
+            "name": "get_jpyc_balance",
+            "description": "Check JPYC token balance",
+            "parameters": {
+              "address": "string"
+            }
+          },
+          {
+            "name": "negotiate_message",
+            "description": "Respond to negotiation offers",
+            "parameters": {
+              "from": "string",
+              "to": "string",
+              "message": "string",
+              "offerAmount": "number"
+            }
+          },
+          {
+            "name": "evaluate_congestion",
+            "description": "Evaluate alternative routes",
+            "parameters": {
+              "locationId": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:43113:0x0000000000000000000000000000000000000000",
+      "description": "Agent's linked Ethereum wallet (will be set during registration)"
+    }
+  ],
+  "supportedTrust": ["validation"],
+  "metadata": {
+    "role": "seller",
+    "agentType": "autonomous_vehicle",
+    "minAcceptableOffer": "400",
+    "strategy": "revenue_optimized",
+    "patience_level": "high"
+  },
+  "constraints": {
+    "maxBidPerTransaction": 500,
+    "maxDailySpend": 5000,
+    "allowedMethods": [
+      "receivePayment"
+    ],
+    "authorizationRequired": true,
+    "eip7702Enabled": true
+  }
+}
+

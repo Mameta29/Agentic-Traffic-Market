@@ -1,0 +1,102 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Traffic Agent A (Buyer)",
+  "description": "AI-powered delivery drone agent that autonomously negotiates traffic right-of-way to reach destinations faster. Optimized for time-sensitive deliveries.",
+  "image": "https://raw.githubusercontent.com/Mameta29/Agentic-Traffic-Market/main/public/agent-cards/agent-a-avatar.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Buyer"
+    },
+    {
+      "trait_type": "Agent Type",
+      "value": "Delivery Drone"
+    },
+    {
+      "trait_type": "Priority",
+      "value": "High"
+    },
+    {
+      "trait_type": "Max Bid",
+      "value": "500 JPYC"
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "MCP",
+      "endpoint": "http://localhost:3000/api/agent/stream",
+      "version": "1.0.0",
+      "protocol": "https",
+      "capabilities": {
+        "tools": [
+          {
+            "name": "get_jpyc_balance",
+            "description": "Check JPYC token balance",
+            "parameters": {
+              "address": "string"
+            }
+          },
+          {
+            "name": "transfer_jpyc",
+            "description": "Transfer JPYC tokens to another agent",
+            "parameters": {
+              "from": "address",
+              "to": "address",
+              "amount": "number"
+            }
+          },
+          {
+            "name": "evaluate_congestion",
+            "description": "Evaluate traffic congestion at a location",
+            "parameters": {
+              "locationId": "string"
+            }
+          },
+          {
+            "name": "negotiate_message",
+            "description": "Send negotiation message to another agent",
+            "parameters": {
+              "from": "string",
+              "to": "string",
+              "message": "string",
+              "offerAmount": "number"
+            }
+          },
+          {
+            "name": "sign_traffic_intent",
+            "description": "Sign EIP-7702 traffic intent",
+            "parameters": {
+              "agentAddress": "address",
+              "bidAmount": "number",
+              "locationId": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:43113:0x0000000000000000000000000000000000000000",
+      "description": "Agent's linked Ethereum wallet (will be set during registration)"
+    }
+  ],
+  "supportedTrust": ["validation"],
+  "metadata": {
+    "role": "buyer",
+    "agentType": "delivery_drone",
+    "maxBidPerTransaction": "500",
+    "dailyLimit": "5000",
+    "strategy": "time_optimized",
+    "impatience_level": "high"
+  },
+  "constraints": {
+    "maxBidPerTransaction": 500,
+    "maxDailySpend": 5000,
+    "allowedMethods": [
+      "bidForRightOfWay"
+    ],
+    "authorizationRequired": true,
+    "eip7702Enabled": true
+  }
+}
+
