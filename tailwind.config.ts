@@ -28,7 +28,34 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // カスタムスクロールバー用プラグイン
+    function ({ addUtilities }: any) {
+      const newUtilities = {
+        '.scrollbar-thin': {
+          'scrollbar-width': 'thin',
+        },
+        '.scrollbar-thumb-green-500\\/30': {
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(34, 197, 94, 0.3)',
+            borderRadius: '3px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: 'rgba(34, 197, 94, 0.5)',
+          },
+        },
+        '.scrollbar-track-slate-800': {
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: '#1e293b',
+          },
+        },
+      };
+      addUtilities(newUtilities);
+    },
+  ],
 };
 
 export default config;
