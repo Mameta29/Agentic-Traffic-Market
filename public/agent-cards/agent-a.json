@@ -89,6 +89,19 @@
     "strategy": "time_optimized",
     "impatience_level": "high"
   },
+  "currentContext": {
+    "mission": {
+      "type": "delivery",
+      "priority": "high",
+      "destinationImportance": 9
+    },
+    "negotiationStrategy": {
+      "maxWillingToPay": 500,
+      "minAcceptableOffer": 300,
+      "patienceLevel": 2,
+      "preferredRole": "flexible"
+    }
+  },
   "constraints": {
     "maxBidPerTransaction": 500,
     "maxDailySpend": 5000,

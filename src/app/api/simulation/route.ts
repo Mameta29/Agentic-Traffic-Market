@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         return Response.json({ success: true, message: 'Simulation reset' });
 
       case 'negotiate':
-        // 自動ネゴシエーション開始
+        // 自動ネゴシエーション開始（レガシー版: 固定役割）
         const { buyerAddress, sellerAddress, locationId } = body;
         
         if (!buyerAddress || !sellerAddress || !locationId) {
@@ -54,12 +54,20 @@ export async function POST(request: Request) {
           );
         }
 
-        console.log('[API] Starting auto-negotiation...');
+        console.log('[API] Starting auto-negotiation (legacy mode)...');
         const result = await startNegotiation(buyerAddress, sellerAddress, locationId);
 
         return Response.json({
           success: true,
           negotiationResult: result,
+        });
+
+      case 'negotiate-dynamic':
+        // 動的役割決定ネゴシエーション（新版）
+        // POST /api/simulation { action: "negotiate-dynamic", agent1Id, agent2Id, locationId }
+        // 詳細は /api/simulation/negotiate-dynamic を使用
+        return Response.json({
+          message: 'Use POST /api/simulation/negotiate-dynamic instead',
         });
 
       case 'initialize':

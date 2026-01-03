@@ -52,7 +52,8 @@ docs/
 DEPLOYMENT_GUIDE.md
 ARCHITECTURE.md
 IMPLEMENTATION_PLAN.md
-docs/architecture/SYSTEM_DESIGN.md
+DYNAMIC_ROLES_GUIDE.md
+docs/architecture/
 
 # Foundry / Smart Contracts
 contracts/out/

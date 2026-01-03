@@ -36,24 +36,24 @@ export default function AgentDashboard() {
     simulation.initialize();
   }, []);
 
-  // コリジョン検出時に自動ネゴシエーション開始
+  // コリジョン検出時に自動ネゴシエーション開始（動的役割決定版）
   useEffect(() => {
     if (simulation.collisionDetected && simulation.collisionLocation && demoStep === 'running') {
-      console.log('[Dashboard] Collision detected! Starting auto-negotiation...');
+      console.log('[Dashboard] Collision detected! Starting dynamic negotiation...');
       setDemoStep('negotiating');
       
-      // 自動ネゴシエーション実行
-      const buyer = simulation.agents.find(a => a.role === 'buyer');
-      const seller = simulation.agents.find(a => a.role === 'seller');
-      
-      if (buyer && seller) {
-        simulation.negotiate(
-          buyer.address,
-          seller.address,
+      // 動的ネゴシエーション実行（役割はAIが決定）
+      if (simulation.agents.length >= 2) {
+        simulation.negotiateDynamic(
+          1, // Agent 1 ID
+          2, // Agent 2 ID
           simulation.collisionLocation
         ).then((result) => {
           if (result?.success) {
-            console.log('[Dashboard] Negotiation successful!');
+            console.log('[Dashboard] Dynamic negotiation successful!');
+            console.log(`  Buyer: Agent ${result.buyer?.agentId}`);
+            console.log(`  Seller: Agent ${result.seller?.agentId}`);
+            console.log(`  Price: ${result.agreedPrice} JPYC`);
             setDemoStep('completed');
           } else {
             console.log('[Dashboard] Negotiation failed');

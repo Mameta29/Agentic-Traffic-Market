@@ -70,6 +70,19 @@
     "strategy": "revenue_optimized",
     "patience_level": "high"
   },
+  "currentContext": {
+    "mission": {
+      "type": "patrol",
+      "priority": "low",
+      "destinationImportance": 3
+    },
+    "negotiationStrategy": {
+      "maxWillingToPay": 150,
+      "minAcceptableOffer": 400,
+      "patienceLevel": 8,
+      "preferredRole": "flexible"
+    }
+  },
   "constraints": {
     "maxBidPerTransaction": 500,
     "maxDailySpend": 5000,

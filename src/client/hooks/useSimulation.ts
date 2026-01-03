@@ -73,7 +73,7 @@ export function useSimulation() {
     }
   }, []);
 
-  // 自動ネゴシエーション開始
+  // 自動ネゴシエーション開始（レガシー版: 固定役割）
   const negotiate = useCallback(
     async (buyerAddress: string, sellerAddress: string, locationId: string) => {
       setIsLoading(true);
@@ -93,6 +93,33 @@ export function useSimulation() {
         return data;
       } catch (error) {
         console.error('[useSimulation] Negotiate error:', error);
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  // 動的役割決定ネゴシエーション（新版）
+  const negotiateDynamic = useCallback(
+    async (agent1Id: number, agent2Id: number, locationId: string) => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/simulation/negotiate-dynamic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            agent1Id,
+            agent2Id,
+            locationId,
+          }),
+        });
+        const data = await response.json();
+        console.log('[useSimulation] Dynamic negotiation result:', data);
+        return data;
+      } catch (error) {
+        console.error('[useSimulation] Dynamic negotiate error:', error);
         return null;
       } finally {
         setIsLoading(false);
@@ -125,6 +152,7 @@ export function useSimulation() {
     initialize,
     start,
     negotiate,
+    negotiateDynamic,
     reset,
   };
 }
