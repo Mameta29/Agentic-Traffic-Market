@@ -55,10 +55,29 @@ export function NegotiationResult({ result }: NegotiationResultProps) {
             </div>
 
             {/* トランザクションログ */}
-            <div className="text-xs text-gray-500 max-h-20 overflow-y-auto">
-              {result.transcript.slice(-3).map((line, i) => (
-                <p key={i}>{line}</p>
-              ))}
+            <div className="text-xs max-h-32 overflow-y-auto space-y-1">
+              {result.transcript.map((line, i) => {
+                const isError = line.includes('[Error]');
+                const isSystem = line.includes('[System]');
+                const isAgent = line.includes('[Agent');
+                
+                return (
+                  <p
+                    key={i}
+                    className={
+                      isError
+                        ? 'text-red-400'
+                        : isSystem
+                          ? 'text-cyan-400'
+                          : isAgent
+                            ? 'text-green-400'
+                            : 'text-gray-500'
+                    }
+                  >
+                    {line.length > 100 ? line.substring(0, 100) + '...' : line}
+                  </p>
+                );
+              })}
             </div>
           </div>
         ) : (

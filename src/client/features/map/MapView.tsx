@@ -50,13 +50,14 @@ export function MapView({ agents }: MapViewProps) {
     }
 
     // エージェントを描画
-    agents.forEach((agent) => {
+    agents.forEach((agent, index) => {
       // 緯度経度をキャンバス座標に変換（簡易版）
       const x = ((agent.position.lng + 180) / 360) * canvas.width;
       const y = ((90 - agent.position.lat) / 180) * canvas.height;
 
-      // エージェントの色
-      const color = agent.role === 'buyer' ? '#00ff41' : '#ff006e'; // green / pink
+      // エージェントの色（IDベース、役割ベースではない）
+      const agentLetter = agent.id === 'agent-1' || agent.id === 'agent-a' || index === 0 ? 'A' : 'B';
+      const color = agentLetter === 'A' ? '#00ff41' : '#ff006e'; // green / pink
 
       // グロー効果
       ctx.shadowBlur = 20;

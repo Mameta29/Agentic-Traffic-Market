@@ -142,36 +142,38 @@ export default function AgentDashboard() {
           <MapView agents={simulation.agents.length > 0 ? simulation.agents : []} />
         </div>
 
-        {/* 右: サイドバー (5/12) */}
-        <div className="col-span-12 lg:col-span-5 h-full flex flex-col gap-4 overflow-hidden">
-          {/* エージェントカード */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-            {simulation.agents.length > 0 && (
-              <>
-                <AgentCard agent={simulation.agents[0]} />
-                <AgentCard agent={simulation.agents[1]} />
-              </>
-            )}
-          </div>
-
-          {/* ネゴシエーション結果 */}
-          {negotiationResult && <NegotiationResult result={negotiationResult} />}
-
-          {/* ターミナル */}
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 overflow-hidden">
-            <div className="h-full min-h-[300px]">
-              <ThinkingTerminal
-                messages={buyerStream.messages}
-                agentName="Agent A"
-                agentRole="buyer"
-              />
+        {/* 右: サイドバー (5/12) - スクロール可能 */}
+        <div className="col-span-12 lg:col-span-5 h-full overflow-y-auto">
+          <div className="flex flex-col gap-4 pb-4">
+            {/* エージェントカード */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+              {simulation.agents.length > 0 && (
+                <>
+                  <AgentCard agent={simulation.agents[0]} />
+                  <AgentCard agent={simulation.agents[1]} />
+                </>
+              )}
             </div>
-            <div className="h-full min-h-[300px]">
-              <ThinkingTerminal
-                messages={sellerStream.messages}
-                agentName="Agent B"
-                agentRole="seller"
-              />
+
+            {/* ネゴシエーション結果 */}
+            {negotiationResult && <NegotiationResult result={negotiationResult} />}
+
+            {/* ターミナル */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+              <div className="min-h-[400px]">
+                <ThinkingTerminal
+                  messages={buyerStream.messages}
+                  agentName="Agent A"
+                  agentRole="buyer"
+                />
+              </div>
+              <div className="min-h-[400px]">
+                <ThinkingTerminal
+                  messages={sellerStream.messages}
+                  agentName="Agent B"
+                  agentRole="seller"
+                />
+              </div>
             </div>
           </div>
         </div>
