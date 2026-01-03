@@ -47,13 +47,12 @@ next-env.d.ts
 *~
 
 # AI Rules & Documentation (keep private)
-CURSOR_RULES.md
+# README.md 以外の全ての.mdファイルをignore
+*.md
+!README.md
+
+# docs ディレクトリ全体
 docs/
-DEPLOYMENT_GUIDE.md
-ARCHITECTURE.md
-IMPLEMENTATION_PLAN.md
-DYNAMIC_ROLES_GUIDE.md
-docs/architecture/
 
 # Foundry / Smart Contracts
 contracts/out/
