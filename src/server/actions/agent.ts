@@ -25,14 +25,19 @@ export async function streamAgentThinking(
     // システムプロンプトを追加
     const systemPrompt = AGENT_SYSTEM_PROMPTS[role];
 
-    // Vertex AI (Gemini) でストリーミング開始
+    // Vertex AI (Gemini 3) でストリーミング開始
     const result = streamText({
       model: google(GEMINI_MODEL),
       system: systemPrompt,
       messages,
       tools,
       maxSteps: 10, // 最大ツール呼び出し回数
-      temperature: 0.7,
+      temperature: 1.0, // Gemini 3推奨: デフォルトの1.0を使用
+      // Gemini 3の新機能: thinking_level
+      // 'high' (default): 深い推論、'low': 低レイテンシ
+      experimental_telemetry: {
+        isEnabled: true,
+      },
       onStepFinish: (step) => {
         console.log(`[Agent AI] Step finished:`, {
           stepType: step.stepType,

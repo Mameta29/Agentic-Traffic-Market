@@ -12,9 +12,11 @@ export const google = createGoogleGenerativeAI({
 
 /**
  * 使用するモデル
- * Gemini 1.5 Pro または Flash（利用可能なモデルに応じて選択）
+ * Gemini 3 Flash (Preview) - Pro-level intelligence at Flash speed
+ * Knowledge cutoff: Jan 2025
+ * Context: 1M tokens input, 64k output
  */
-export const GEMINI_MODEL = 'gemini-1.5-pro-002';
+export const GEMINI_MODEL = 'gemini-3-flash-preview';
 
 /**
  * エージェント用のシステムプロンプト

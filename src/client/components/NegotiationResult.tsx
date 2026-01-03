@@ -1,0 +1,79 @@
+'use client';
+
+import { Card, CardContent } from './Card';
+import { CheckCircle, XCircle, ArrowRight } from 'lucide-react';
+
+interface NegotiationResultProps {
+  result: {
+    success: boolean;
+    buyer: { agentId: number; wallet: string } | null;
+    seller: { agentId: number; wallet: string } | null;
+    agreedPrice: number | null;
+    transcript: string[];
+  };
+}
+
+/**
+ * ネゴシエーション結果表示コンポーネント
+ * AIによる動的役割決定の結果を可視化
+ */
+export function NegotiationResult({ result }: NegotiationResultProps) {
+  if (!result) return null;
+
+  return (
+    <Card glow="cyan" className="w-full">
+      <CardContent className="p-4">
+        {result.success ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              <h3 className="text-green-400 font-bold">Negotiation Success</h3>
+            </div>
+
+            {/* AI決定の役割 */}
+            <div className="bg-slate-800 p-3 rounded space-y-2">
+              <p className="text-xs text-cyan-400 font-semibold uppercase">
+                AI-Determined Roles:
+              </p>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-green-400 font-mono">
+                  Agent {result.buyer?.agentId}
+                </span>
+                <span className="text-gray-400">(Buyer)</span>
+                <ArrowRight className="w-4 h-4 text-yellow-400" />
+                <span className="text-pink-400 font-mono">Agent {result.seller?.agentId}</span>
+                <span className="text-gray-400">(Seller)</span>
+              </div>
+            </div>
+
+            {/* 合意価格 */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Agreed Price:</span>
+              <span className="text-lg font-bold text-yellow-400">
+                {result.agreedPrice} JPYC
+              </span>
+            </div>
+
+            {/* トランザクションログ */}
+            <div className="text-xs text-gray-500 max-h-20 overflow-y-auto">
+              {result.transcript.slice(-3).map((line, i) => (
+                <p key={i}>{line}</p>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <XCircle className="w-5 h-5 text-red-400" />
+              <h3 className="text-red-400 font-bold">No Agreement</h3>
+            </div>
+            <p className="text-sm text-gray-400">
+              Both agents could not reach an agreement
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+

@@ -14,8 +14,10 @@ interface AgentCardProps {
  * エージェント情報表示カード
  */
 export function AgentCard({ agent, onStartNegotiation }: AgentCardProps) {
-  const roleColor = agent.role === 'buyer' ? 'green' : 'pink';
-  const textColor = agent.role === 'buyer' ? 'text-green-400' : 'text-pink-400';
+  // Agent IDからカラーを決定（役割ではなく）
+  const agentLetter = agent.id === 'agent-1' || agent.id === 'agent-a' ? 'A' : 'B';
+  const roleColor = agentLetter === 'A' ? 'green' : 'pink';
+  const textColor = agentLetter === 'A' ? 'text-green-400' : 'text-pink-400';
 
   const stateColors: Record<typeof agent.state, string> = {
     idle: 'text-gray-400',
@@ -38,10 +40,10 @@ export function AgentCard({ agent, onStartNegotiation }: AgentCardProps) {
           <Bot className={`w-6 h-6 ${textColor}`} />
           <div>
             <h3 className={`text-lg font-bold ${textColor} uppercase`}>
-              Agent {agent.role === 'buyer' ? 'A' : 'B'}
+              Agent {agentLetter}
             </h3>
             <p className="text-xs text-gray-500">
-              {agent.role === 'buyer' ? 'Buyer' : 'Seller'}
+              Role: Flexible (AI decides)
             </p>
           </div>
         </div>

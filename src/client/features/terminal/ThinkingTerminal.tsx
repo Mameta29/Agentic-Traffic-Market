@@ -36,7 +36,9 @@ export function ThinkingTerminal({ messages, agentName, agentRole }: ThinkingTer
           <h3 className={`text-sm font-bold ${roleColor} uppercase tracking-wide`}>
             {agentName}
           </h3>
-          <p className="text-xs text-gray-500">{agentRole === 'buyer' ? 'Buyer Agent' : 'Seller Agent'}</p>
+          <p className="text-xs text-gray-500">
+            Role: Flexible (AI decides)
+          </p>
         </div>
         {roleIcon}
       </CardHeader>

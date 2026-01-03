@@ -160,7 +160,9 @@ async function evaluateSituation(
   });
 
   try {
-    // AIに状況判断を依頼
+    console.log(`[Evaluation] Sending prompt to Gemini for Agent ${myContext.agentId}...`);
+    
+    // AIに状況判断を依頼（Gemini 3）
     const result = await streamText({
       model: google(GEMINI_MODEL),
       messages: [
@@ -169,15 +171,26 @@ async function evaluateSituation(
           content: prompt,
         },
       ],
-      temperature: 0.7,
+      temperature: 1.0, // Gemini 3推奨値
+      maxTokens: 500,
     });
 
     let fullResponse = '';
-    for await (const chunk of result.textStream) {
-      fullResponse += chunk;
+    try {
+      for await (const chunk of result.textStream) {
+        fullResponse += chunk;
+      }
+    } catch (streamError) {
+      console.error(`[Evaluation] Stream error for Agent ${myContext.agentId}:`, streamError);
+      throw streamError;
     }
 
-    console.log(`[Evaluation] Agent ${myContext.agentId} response:`, fullResponse);
+    console.log(`[Evaluation] Agent ${myContext.agentId} full response:`, fullResponse);
+
+    if (!fullResponse || fullResponse.trim().length === 0) {
+      console.warn(`[Evaluation] Empty response from AI for Agent ${myContext.agentId}, using fallback`);
+      return fallbackEvaluation(myContext);
+    }
 
     // AIの応答をパース
     const decision = parseAIDecision(fullResponse, myContext);
@@ -192,8 +205,10 @@ async function evaluateSituation(
     };
   } catch (error) {
     console.error(`[Evaluation] Agent ${myContext.agentId} error:`, error);
+    console.error(`[Evaluation] Error details:`, error instanceof Error ? error.message : error);
 
     // Fallback: ルールベースの判断
+    console.log(`[Evaluation] Using fallback evaluation for Agent ${myContext.agentId}`);
     return fallbackEvaluation(myContext);
   }
 }

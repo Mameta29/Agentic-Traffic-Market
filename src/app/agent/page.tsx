@@ -6,6 +6,7 @@ import { ThinkingTerminal } from '@/client/features/terminal/ThinkingTerminal';
 import { AgentCard } from '@/client/features/agent/AgentCard';
 import { Button } from '@/client/components/Button';
 import { Badge } from '@/client/components/Badge';
+import { NegotiationResult } from '@/client/components/NegotiationResult';
 import { useSocket } from '@/client/hooks/useSocket';
 import { useAgentStream } from '@/client/hooks/useAgentStream';
 import { useSimulation } from '@/client/hooks/useSimulation';
@@ -30,6 +31,7 @@ export default function AgentDashboard() {
   );
 
   const [demoStep, setDemoStep] = useState<string>('ready');
+  const [negotiationResult, setNegotiationResult] = useState<any>(null);
 
   // 初期化
   useEffect(() => {
@@ -49,6 +51,8 @@ export default function AgentDashboard() {
           2, // Agent 2 ID
           simulation.collisionLocation
         ).then((result) => {
+          setNegotiationResult(result);
+          
           if (result?.success) {
             console.log('[Dashboard] Dynamic negotiation successful!');
             console.log(`  Buyer: Agent ${result.buyer?.agentId}`);
@@ -149,6 +153,9 @@ export default function AgentDashboard() {
               </>
             )}
           </div>
+
+          {/* ネゴシエーション結果 */}
+          {negotiationResult && <NegotiationResult result={negotiationResult} />}
 
           {/* ターミナル */}
           <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 overflow-hidden">
