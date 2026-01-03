@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapView } from '@/client/features/map/MapView';
+import { MapViewEnhanced } from '@/client/features/map/MapViewEnhanced';
 import { ThinkingTerminal } from '@/client/features/terminal/ThinkingTerminal';
 import { AgentCard } from '@/client/features/agent/AgentCard';
 import { Button } from '@/client/components/Button';
@@ -20,15 +20,9 @@ export default function AgentDashboard() {
   const { isConnected } = useSocket();
   const simulation = useSimulation();
   
-  // AIストリーム（実際のエージェントアドレスを使用）
-  const buyerStream = useAgentStream(
-    simulation.agents[0]?.address || 'agent-a', 
-    'buyer'
-  );
-  const sellerStream = useAgentStream(
-    simulation.agents[1]?.address || 'agent-b', 
-    'seller'
-  );
+  // AIストリーム用のカスタムフック
+  const [agent1Messages, setAgent1Messages] = useState<any[]>([]);
+  const [agent2Messages, setAgent2Messages] = useState<any[]>([]);
 
   const [demoStep, setDemoStep] = useState<string>('ready');
   const [negotiationResult, setNegotiationResult] = useState<any>(null);
@@ -43,6 +37,9 @@ export default function AgentDashboard() {
     if (simulation.collisionDetected && simulation.collisionLocation && demoStep === 'running') {
       console.log('[Dashboard] Collision detected! Starting dynamic negotiation...');
       setDemoStep('negotiating');
+      
+      // AI思考プロセスをターミナルに表示
+      streamAgentThinking(1, 2, simulation.collisionLocation);
       
       // 動的ネゴシエーション実行（役割はAIが決定）
       if (simulation.agents.length >= 2) {
@@ -67,6 +64,37 @@ export default function AgentDashboard() {
       }
     }
   }, [simulation.collisionDetected, demoStep]);
+
+  // AI思考プロセスをストリーミング（ターミナル表示用）
+  const streamAgentThinking = async (agentId: number, otherAgentId: number, locationId: string) => {
+    // Agent 1のストリーム
+    const stream1 = new EventSource(
+      `/api/agent/stream-dynamic?agentId=${agentId}&otherAgentId=${otherAgentId}&locationId=${locationId}`
+    );
+
+    stream1.onmessage = (event) => {
+      const data = event.data;
+      setAgent1Messages((prev) => [...prev, { role: 'assistant', content: data }]);
+    };
+
+    stream1.onerror = () => {
+      stream1.close();
+    };
+
+    // Agent 2のストリーム
+    const stream2 = new EventSource(
+      `/api/agent/stream-dynamic?agentId=${otherAgentId}&otherAgentId=${agentId}&locationId=${locationId}`
+    );
+
+    stream2.onmessage = (event) => {
+      const data = event.data;
+      setAgent2Messages((prev) => [...prev, { role: 'assistant', content: data }]);
+    };
+
+    stream2.onerror = () => {
+      stream2.close();
+    };
+  };
 
   // フルデモシナリオ実行
   const handleStartFullDemo = async () => {
@@ -139,7 +167,7 @@ export default function AgentDashboard() {
       <div className="flex-1 grid grid-cols-12 gap-4 p-4 overflow-hidden">
         {/* 左: マップエリア (7/12) */}
         <div className="col-span-12 lg:col-span-7 h-full">
-          <MapView agents={simulation.agents.length > 0 ? simulation.agents : []} />
+          <MapViewEnhanced agents={simulation.agents.length > 0 ? simulation.agents : []} />
         </div>
 
         {/* 右: サイドバー (5/12) - スクロール可能 */}
@@ -162,14 +190,14 @@ export default function AgentDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
               <div className="min-h-[400px]">
                 <ThinkingTerminal
-                  messages={buyerStream.messages}
+                  messages={agent1Messages}
                   agentName="Agent A"
                   agentRole="buyer"
                 />
               </div>
               <div className="min-h-[400px]">
                 <ThinkingTerminal
-                  messages={sellerStream.messages}
+                  messages={agent2Messages}
                   agentName="Agent B"
                   agentRole="seller"
                 />

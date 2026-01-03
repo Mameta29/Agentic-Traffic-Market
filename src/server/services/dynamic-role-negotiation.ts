@@ -355,8 +355,22 @@ function matchAgents(
   // Case 1: Agent A wants to pay, Agent B wants payment
   if (evalA.willingToPay !== null && evalB.willingToAccept !== null) {
     if (evalA.willingToPay >= evalB.willingToAccept) {
-      // 合意可能
-      const agreedPrice = Math.floor((evalA.willingToPay + evalB.willingToAccept) / 2);
+      // 合意可能 - ネゴシエーションプロセスをシミュレート
+      // Buyerの提示額とSellerの希望額の間で「交渉」
+      
+      // ランダム要素を加えて、毎回異なる結果に
+      const negotiationFactor = 0.3 + Math.random() * 0.4; // 0.3-0.7
+      const priceRange = evalA.willingToPay - evalB.willingToAccept;
+      const agreedPrice = Math.floor(
+        evalB.willingToAccept + priceRange * negotiationFactor
+      );
+
+      console.log('[Matching] Price negotiation:', {
+        buyerMax: evalA.willingToPay,
+        sellerMin: evalB.willingToAccept,
+        negotiationFactor: negotiationFactor.toFixed(2),
+        agreedPrice,
+      });
 
       return {
         success: true,

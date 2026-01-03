@@ -51,8 +51,8 @@ export async function initializeAgents(): Promise<Agent[]> {
           role: agent1Info.role,
           address: agent1Info.wallet,
           state: 'idle',
-          position: { lat: 35.6762, lng: 139.6503 }, // 東京駅
-          destination: { lat: 35.6812, lng: 139.7671 },
+          position: { lat: 35.65, lng: 139.60 }, // 左下（大きく離す）
+          destination: { lat: 35.75, lng: 139.85 }, // 右上へ
           balance: '5000',
         },
         {
@@ -60,8 +60,8 @@ export async function initializeAgents(): Promise<Agent[]> {
           role: agent2Info.role,
           address: agent2Info.wallet,
           state: 'idle',
-          position: { lat: 35.6812, lng: 139.7671 },
-          destination: { lat: 35.6762, lng: 139.6503 },
+          position: { lat: 35.75, lng: 139.85 }, // 右上からスタート
+          destination: { lat: 35.65, lng: 139.60 }, // 左下へ
           balance: '3000',
         },
       ];
@@ -178,8 +178,8 @@ export async function startSimulation(): Promise<void> {
 function triggerCollision(): void {
   console.log('[Simulation] 🚨 COLLISION DETECTED at intersection LOC_001');
 
-  // コリジョン地点（中間地点）
-  const collisionPoint = { lat: 35.6787, lng: 139.7587 };
+  // コリジョン地点（中間地点）- 2つの初期位置の中間
+  const collisionPoint = { lat: 35.70, lng: 139.725 };
 
   // Agent Aを停止
   updateAgentState('agent-a', {
