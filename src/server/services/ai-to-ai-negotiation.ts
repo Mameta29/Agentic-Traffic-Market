@@ -320,18 +320,22 @@ async function executePayment(
 ): Promise<void> {
   transcript.push(`[System] Executing payment: ${amount} JPYC...`);
 
+  // Seller側のエージェントIDを特定（常に実行）
+  const sellerAgentId = seller.agentId === 1 ? 'agent-1' : 'agent-2';
+
   try {
     const buyerKey = buyer.agentId === 1 ? env.agentAPrivateKey : env.agentBPrivateKey;
 
     if (!buyerKey) {
-      throw new Error('Buyer private key not available');
-    }
-
-    if (
+      console.warn('[Payment] Buyer private key not available, simulating payment');
+      transcript.push('[System] Simulated payment (private key not configured)');
+      transcript.push(`[System] ${amount} JPYC: Agent ${buyer.agentId} → Agent ${seller.agentId}`);
+    } else if (
       !env.jpycContractAddress ||
       env.jpycContractAddress === '0x0000000000000000000000000000000000000000'
     ) {
-      transcript.push('[System] ⚠️ Simulated payment (contracts not deployed)');
+      transcript.push('[System] Simulated payment (contracts not deployed)');
+      transcript.push(`[System] ${amount} JPYC: Agent ${buyer.agentId} → Agent ${seller.agentId}`);
     } else {
       const txHash = await executeEIP7702Bid(
         buyerKey as `0x${string}`,
@@ -340,23 +344,19 @@ async function executePayment(
         locationId
       );
 
-      transcript.push(`[System] ✅ Payment confirmed: ${txHash}`);
+      transcript.push(`[System] Payment confirmed: ${txHash}`);
     }
-
-    // 道を譲る
-    const sellerAgentId = seller.agentId === 1 ? 'agent-1' : 'agent-2';
-    resolveCollision(sellerAgentId);
-    transcript.push('[System] Collision resolved. Traffic flowing.');
   } catch (error) {
+    console.error('[Payment] Error:', error);
     transcript.push(
-      `[Error] Payment failed: ${error instanceof Error ? error.message : 'Unknown'}`
+      `[Error] Payment error: ${error instanceof Error ? error.message : 'Unknown'}`
     );
-
-    if (process.env.NODE_ENV === 'development') {
-      transcript.push('[System] Continuing demo (development mode)');
-      const sellerAgentId = seller.agentId === 1 ? 'agent-1' : 'agent-2';
-      resolveCollision(sellerAgentId);
-    }
+    transcript.push('[System] Simulating payment completion');
   }
+
+  // 決済成功/失敗に関わらず、デモを進める
+  console.log(`[Payment] Resolving collision, seller ${sellerAgentId} moves aside`);
+  resolveCollision(sellerAgentId);
+  transcript.push('[System] Collision resolved. Traffic flowing.');
 }
 

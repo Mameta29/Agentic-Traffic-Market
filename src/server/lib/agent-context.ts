@@ -55,12 +55,12 @@ export async function buildAgentContext(
       strategy = agentId === 1
         ? { 
             maxWillingToPay: 500, 
-            minAcceptableOffer: 200, // 受け取る側になった場合
+            minAcceptableOffer: 200,
             patienceLevel: 2 
           }
         : { 
-            maxWillingToPay: 200, // 払う側になった場合
-            minAcceptableOffer: 350, // 400から350に下げる（交渉余地を作る）
+            maxWillingToPay: 200,
+            minAcceptableOffer: 420, // 350から420に上げる（カウンター誘発）
             patienceLevel: 8 
           };
     }
