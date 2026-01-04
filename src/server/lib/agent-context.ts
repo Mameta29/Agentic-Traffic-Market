@@ -49,19 +49,29 @@ export async function buildAgentContext(
         : '0x0987654321098765432109876543210987654321';
 
       mission = agentId === 1
-        ? { type: 'delivery', deadline: Date.now() + 1800000, priority: 'high', destinationImportance: 9 }
-        : { type: 'patrol', deadline: null, priority: 'low', destinationImportance: 3 };
+        ? { 
+            type: 'delivery',           // 緊急配送
+            deadline: Date.now() + 600000,  // 10分後（30分→10分：より緊急に）
+            priority: 'high', 
+            destinationImportance: 10       // 最重要
+          }
+        : { 
+            type: 'leisure',            // 観光（patrolから変更）
+            deadline: null,             // 期限なし
+            priority: 'low', 
+            destinationImportance: 1    // どうでもいい
+          };
 
       strategy = agentId === 1
         ? { 
-            maxWillingToPay: 500, 
-            minAcceptableOffer: 200,
-            patienceLevel: 2 
+            maxWillingToPay: 2000,      // 500→2000：金持ち、時間が大事
+            minAcceptableOffer: 10000,  // 200→10000：絶対にSellerにならない
+            patienceLevel: 1            // 2→1：超短気
           }
         : { 
-            maxWillingToPay: 200,
-            minAcceptableOffer: 450, // 420から450に上げる（確実にカウンター発生）
-            patienceLevel: 8 
+            maxWillingToPay: 50,        // 200→50：貧乏、払えない
+            minAcceptableOffer: 200,    // 450→200：安くても譲る（お金が欲しい）
+            patienceLevel: 10           // 8→10：超我慢強い
           };
     }
 

@@ -83,23 +83,22 @@
   "supportedTrust": ["validation"],
   "metadata": {
     "role": "buyer",
-    "agentType": "delivery_drone",
-    "maxBidPerTransaction": "500",
-    "dailyLimit": "5000",
-    "strategy": "time_optimized",
-    "impatience_level": "high"
+    "agentType": "premium_delivery_drone",
+    "economicClass": "upper",
+    "strategy": "time_over_money",
+    "description": "金持ち、時間が最重要、常に支払う側"
   },
   "currentContext": {
     "mission": {
       "type": "delivery",
       "priority": "high",
-      "destinationImportance": 9
+      "destinationImportance": 10
     },
     "negotiationStrategy": {
-      "maxWillingToPay": 500,
-      "minAcceptableOffer": 200,
-      "patienceLevel": 2,
-      "preferredRole": "flexible"
+      "maxWillingToPay": 2000,
+      "minAcceptableOffer": 99999,
+      "patienceLevel": 1,
+      "preferredRole": "buyer"
     }
   },
   "constraints": {
