@@ -60,11 +60,14 @@ Task: Make your FIRST OFFER to buy the right-of-way.
 Strategy tips:
 - Start LOWER than your max (${contextA.strategy.maxWillingToPay}) to leave room for negotiation
 - A good starting point is 60-80% of your max
-- Example: If max is 500, start with 300-400
+- Example: If max is 500, start with 350-420
 
-Respond with ONLY the JPYC amount as a plain number.
-Example responses: "380" or "420" or "350"
-DO NOT include any other text, just the number.`;
+IMPORTANT: Respond with EXACTLY this format:
+Just write the number. Nothing else.
+Good: "380"
+Bad: "I offer 380" or "380 JPYC" or "My offer is 380"
+
+Your offer amount (number only):`;
 
     const initialOffer = await callAI(initialOfferPrompt);
     console.log('[AI-to-AI] Agent A initial offer response:', initialOffer);
@@ -97,20 +100,23 @@ Your situation:
 
 Agent ${contextA.agentId} has offered you ${currentOffer} JPYC to move aside.
 
-Decision rules:
-- If ${currentOffer} >= ${contextB.strategy.minAcceptableOffer}: You should ACCEPT
-- If ${currentOffer} < ${contextB.strategy.minAcceptableOffer} but close (within 50): COUNTER-OFFER
-- If ${currentOffer} is way too low (100+ below minimum): REJECT
+Analysis:
+- Current offer: ${currentOffer} JPYC
+- Your minimum: ${contextB.strategy.minAcceptableOffer} JPYC
+- Difference: ${contextB.strategy.minAcceptableOffer - currentOffer} JPYC
 
-Respond EXACTLY in one of these formats:
-- "ACCEPT" (if the offer is acceptable)
-- "COUNTER:450" (if you want to counter with 450 JPYC)
-- "REJECT" (if the offer is unacceptable)
+Decision:
+- If offer >= minimum (${currentOffer} >= ${contextB.strategy.minAcceptableOffer}): Respond "ACCEPT"
+- If offer is close (within 50): Respond "COUNTER:XXX" (replace XXX with your counter amount)
+- If offer is too low (100+ below): Respond "REJECT"
 
-Current offer: ${currentOffer} JPYC
-Your minimum: ${contextB.strategy.minAcceptableOffer} JPYC
+CRITICAL: Respond with EXACTLY one of these:
+"ACCEPT"
+"COUNTER:450" (example if you want 450 JPYC)
+"REJECT"
 
-What is your response?`;
+No extra text. Just one of the three formats above.
+Your response:`;
 
       const response = await callAI(evaluationPrompt);
       console.log('[AI-to-AI] Agent B response:', response);
@@ -230,8 +236,8 @@ async function callAI(prompt: string): Promise<string> {
   const result = await streamText({
     model: google(GEMINI_MODEL),
     messages: [{ role: 'user', content: prompt }],
-    temperature: 1.0,
-    maxTokens: 100,
+    temperature: 0.3, // より決定論的に（1.0 → 0.3）
+    maxTokens: 200, // 100 → 200（十分な長さ）
   });
 
   let response = '';
@@ -239,16 +245,38 @@ async function callAI(prompt: string): Promise<string> {
     response += chunk;
   }
 
-  console.log('[AI Call] Response:', response);
+  console.log('[AI Call] Full response:', response);
   return response.trim();
 }
 
 /**
- * テキストから数値を抽出
+ * テキストから数値を抽出（改善版）
  */
 function extractNumber(text: string): number {
-  const match = text.match(/\d+/);
-  return match ? Number.parseInt(match[0], 10) : 0;
+  // パターン1: "COUNTER:450" から450を抽出
+  const counterMatch = text.match(/COUNTER:\s*(\d+)/i);
+  if (counterMatch) {
+    return Number.parseInt(counterMatch[1], 10);
+  }
+
+  // パターン2: 単純な数値（"450" or "I offer 450"）
+  const numberMatch = text.match(/\b(\d{3,4})\b/); // 3-4桁の数字
+  if (numberMatch) {
+    return Number.parseInt(numberMatch[1], 10);
+  }
+
+  // パターン3: 最初に見つかった数値
+  const anyMatch = text.match(/\d+/);
+  if (anyMatch) {
+    const num = Number.parseInt(anyMatch[0], 10);
+    // 妥当な範囲チェック（50-1000 JPYC）
+    if (num >= 50 && num <= 1000) {
+      return num;
+    }
+  }
+
+  console.warn('[Extract Number] Failed to extract valid number from:', text);
+  return 0;
 }
 
 /**
