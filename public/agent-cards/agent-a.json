@@ -97,7 +97,7 @@
     },
     "negotiationStrategy": {
       "maxWillingToPay": 500,
-      "minAcceptableOffer": 300,
+      "minAcceptableOffer": 200,
       "patienceLevel": 2,
       "preferredRole": "flexible"
     }

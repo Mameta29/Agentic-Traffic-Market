@@ -77,8 +77,8 @@
       "destinationImportance": 3
     },
     "negotiationStrategy": {
-      "maxWillingToPay": 150,
-      "minAcceptableOffer": 400,
+      "maxWillingToPay": 200,
+      "minAcceptableOffer": 350,
       "patienceLevel": 8,
       "preferredRole": "flexible"
     }
