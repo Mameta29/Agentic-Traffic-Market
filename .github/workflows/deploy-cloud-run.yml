@@ -1,0 +1,72 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: agentic-traffic-market
+  SERVICE_NAME: agentic-traffic-market
+  REGION: us-central1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCP
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/atm-repo/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/atm-repo/${{ env.SERVICE_NAME }}:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/atm-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/atm-repo/${{ env.SERVICE_NAME }}:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/atm-repo/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --port 3000 \
+            --set-env-vars "GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_AI_KEY }}" \
+            --set-env-vars "JPYC_CONTRACT_ADDRESS=0xE50b2A73eCf5D93D1c885C2F676f8921F3CaCdcd" \
+            --set-env-vars "AGENT_IDENTITY_REGISTRY=0xD41DBe68a4aBe9CcA352400Ba1240E27865cD1c1" \
+            --set-env-vars "TRAFFIC_AGENT_CONTRACT=0xC196330F11B18973274419E7Fa2cf954Aff98BE8" \
+            --set-env-vars "USER_1_PRIVATE_KEY=${{ secrets.USER_1_PRIVATE_KEY }}" \
+            --set-env-vars "AGENT_1_PRIVATE_KEY=${{ secrets.AGENT_1_PRIVATE_KEY }}" \
+            --set-env-vars "USER_2_PRIVATE_KEY=${{ secrets.USER_2_PRIVATE_KEY }}" \
+            --set-env-vars "AGENT_2_PRIVATE_KEY=${{ secrets.AGENT_2_PRIVATE_KEY }}" \
+            --set-env-vars "AVALANCHE_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc" \
+            --min-instances 0 \
+            --max-instances 3 \
+            --memory 1Gi \
+            --cpu 1 \
+            --timeout 300
+
+      - name: Show service URL
+        run: |
+          gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)'
+
