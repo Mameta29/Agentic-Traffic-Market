@@ -60,7 +60,7 @@ export async function buildAgentContext(
           }
         : { 
             maxWillingToPay: 200,
-            minAcceptableOffer: 420, // 350から420に上げる（カウンター誘発）
+            minAcceptableOffer: 450, // 420から450に上げる（確実にカウンター発生）
             patienceLevel: 8 
           };
     }
