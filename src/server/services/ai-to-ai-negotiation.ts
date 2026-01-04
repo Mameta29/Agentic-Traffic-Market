@@ -43,24 +43,33 @@ export async function negotiateAItoAI(
     // ===== Round 1: Agent A が初回オファー =====
     transcript.push('[System] Agent A making initial offer...');
     
-    const initialOfferPrompt = `You are Agent ${contextA.agentId} in a traffic negotiation.
+    const initialOfferPrompt = `You are Agent ${contextA.agentId}, a ${contextA.currentMission.type} vehicle in a traffic negotiation.
 
 Your situation:
-- Mission: ${contextA.currentMission.type} (Priority: ${contextA.currentMission.priority})
-- Deadline: ${contextA.currentMission.deadline ? `${Math.floor((contextA.currentMission.deadline - Date.now()) / 60000)} min` : 'None'}
-- Balance: ${contextA.balance} JPYC
-- Max willing to pay: ${contextA.strategy.maxWillingToPay} JPYC
+- Mission: ${contextA.currentMission.type}
+- Priority: ${contextA.currentMission.priority}
+- Deadline: ${contextA.currentMission.deadline ? `${Math.floor((contextA.currentMission.deadline - Date.now()) / 60000)} minutes remaining` : 'No deadline'}
+- Current balance: ${contextA.balance} JPYC
+- Maximum you can pay: ${contextA.strategy.maxWillingToPay} JPYC
 
-You've collided with Agent ${contextB.agentId} at ${locationId}.
-The other agent has low priority and alternatives available.
+You've collided with another vehicle at intersection ${locationId}.
+The other vehicle has ${contextB.currentMission.priority} priority and is ${contextB.currentMission.type === 'patrol' ? 'not urgent' : 'also busy'}.
 
-Make your INITIAL OFFER to purchase the right-of-way.
-Be strategic: Start lower than your maximum to leave room for negotiation.
+Task: Make your FIRST OFFER to buy the right-of-way.
 
-Respond with ONLY a number (the JPYC amount you're offering). Example: "380"`;
+Strategy tips:
+- Start LOWER than your max (${contextA.strategy.maxWillingToPay}) to leave room for negotiation
+- A good starting point is 60-80% of your max
+- Example: If max is 500, start with 300-400
+
+Respond with ONLY the JPYC amount as a plain number.
+Example responses: "380" or "420" or "350"
+DO NOT include any other text, just the number.`;
 
     const initialOffer = await callAI(initialOfferPrompt);
-    const offerAmount = extractNumber(initialOffer);
+    console.log('[AI-to-AI] Agent A initial offer response:', initialOffer);
+    
+    const offerAmount = extractNumber(initialOffer) || Math.floor(contextA.strategy.maxWillingToPay * 0.7);
     
     conversation.push({
       speaker: contextA.agentId,
@@ -78,28 +87,33 @@ Respond with ONLY a number (the JPYC amount you're offering). Example: "380"`;
       transcript.push(`[System] Negotiation round ${negotiationRound}...`);
 
       // Agent Bがオファーを評価
-      const evaluationPrompt = `You are Agent ${contextB.agentId} in a traffic negotiation.
+      const evaluationPrompt = `You are Agent ${contextB.agentId}, a ${contextB.currentMission.type} vehicle.
 
 Your situation:
-- Mission: ${contextB.currentMission.type} (Priority: ${contextB.currentMission.priority})
-- You have ${contextB.alternativeRoutes.length} alternative routes
-- Minimum acceptable: ${contextB.strategy.minAcceptableOffer} JPYC
+- Mission: ${contextB.currentMission.type}
+- Priority: ${contextB.currentMission.priority}
+- Alternative routes: ${contextB.alternativeRoutes.length} available
+- Minimum acceptable price: ${contextB.strategy.minAcceptableOffer} JPYC
 
-Agent ${contextA.agentId} has offered ${currentOffer} JPYC to purchase your position.
+Agent ${contextA.agentId} has offered you ${currentOffer} JPYC to move aside.
 
-Options:
-1. ACCEPT if the offer is >= your minimum
-2. COUNTER-OFFER if too low (but close)
-3. REJECT if way too low
+Decision rules:
+- If ${currentOffer} >= ${contextB.strategy.minAcceptableOffer}: You should ACCEPT
+- If ${currentOffer} < ${contextB.strategy.minAcceptableOffer} but close (within 50): COUNTER-OFFER
+- If ${currentOffer} is way too low (100+ below minimum): REJECT
 
-Respond in this format:
-- If accepting: "ACCEPT"
-- If counter-offering: "COUNTER:<amount>" (example: "COUNTER:450")
-- If rejecting: "REJECT"
+Respond EXACTLY in one of these formats:
+- "ACCEPT" (if the offer is acceptable)
+- "COUNTER:450" (if you want to counter with 450 JPYC)
+- "REJECT" (if the offer is unacceptable)
 
-Be strategic but reasonable.`;
+Current offer: ${currentOffer} JPYC
+Your minimum: ${contextB.strategy.minAcceptableOffer} JPYC
+
+What is your response?`;
 
       const response = await callAI(evaluationPrompt);
+      console.log('[AI-to-AI] Agent B response:', response);
       
       if (response.includes('ACCEPT')) {
         // 合意！

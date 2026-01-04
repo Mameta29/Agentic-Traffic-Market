@@ -35,65 +35,71 @@ export default function AgentDashboard() {
   // コリジョン検出時に自動ネゴシエーション開始（動的役割決定版）
   useEffect(() => {
     if (simulation.collisionDetected && simulation.collisionLocation && demoStep === 'running') {
-      console.log('[Dashboard] Collision detected! Starting dynamic negotiation...');
+      console.log('[Dashboard] Collision detected! Starting AI-to-AI negotiation...');
       setDemoStep('negotiating');
       
-      // AI思考プロセスをターミナルに表示
-      streamAgentThinking(1, 2, simulation.collisionLocation);
-      
-      // 本物のAI-to-AIネゴシエーション実行
-      if (simulation.agents.length >= 2) {
-        simulation.negotiateAItoAI(
-          1, // Agent 1 ID
-          2, // Agent 2 ID
-          simulation.collisionLocation
-        ).then((result) => {
-          setNegotiationResult(result);
-          
-          if (result?.success) {
-            console.log('[Dashboard] Dynamic negotiation successful!');
-            console.log(`  Buyer: Agent ${result.buyer?.agentId}`);
-            console.log(`  Seller: Agent ${result.seller?.agentId}`);
-            console.log(`  Price: ${result.agreedPrice} JPYC`);
-            setDemoStep('completed');
-          } else {
-            console.log('[Dashboard] Negotiation failed');
-            setDemoStep('failed');
-          }
-        });
-      }
+      // ネゴシエーションプロセスをストリーミング表示
+      streamNegotiation(simulation.collisionLocation);
     }
   }, [simulation.collisionDetected, demoStep]);
 
-  // AI思考プロセスをストリーミング（ターミナル表示用）
-  const streamAgentThinking = async (agentId: number, otherAgentId: number, locationId: string) => {
-    // Agent 1のストリーム
-    const stream1 = new EventSource(
-      `/api/agent/stream-dynamic?agentId=${agentId}&otherAgentId=${otherAgentId}&locationId=${locationId}`
+  // ネゴシエーションをストリーミングで可視化
+  const streamNegotiation = (locationId: string) => {
+    const eventSource = new EventSource(
+      `/api/negotiation/stream?agent1Id=1&agent2Id=2&locationId=${locationId}`
     );
 
-    stream1.onmessage = (event) => {
-      const data = event.data;
-      setAgent1Messages((prev) => [...prev, { role: 'assistant', content: data }]);
-    };
+    eventSource.addEventListener('turn', (event) => {
+      const data = JSON.parse(event.data);
+      const message = {
+        role: 'assistant',
+        content: `[Agent ${data.speaker}] ${data.message}`,
+      };
 
-    stream1.onerror = () => {
-      stream1.close();
-    };
+      // Speaker によってメッセージを振り分け
+      if (data.speaker === 1) {
+        setAgent1Messages((prev) => [...prev, message]);
+      } else {
+        setAgent2Messages((prev) => [...prev, message]);
+      }
+    });
 
-    // Agent 2のストリーム
-    const stream2 = new EventSource(
-      `/api/agent/stream-dynamic?agentId=${otherAgentId}&otherAgentId=${agentId}&locationId=${locationId}`
-    );
+    eventSource.addEventListener('result', (event) => {
+      const data = JSON.parse(event.data);
+      
+      // ネゴシエーション結果を設定
+      setNegotiationResult({
+        success: data.success,
+        buyer: { agentId: 1 }, // 会話から決定
+        seller: { agentId: 2 },
+        agreedPrice: data.finalPrice,
+        transcript: data.transcript,
+      });
 
-    stream2.onmessage = (event) => {
-      const data = event.data;
-      setAgent2Messages((prev) => [...prev, { role: 'assistant', content: data }]);
-    };
+      const systemMsg = {
+        role: 'system',
+        content: data.success
+          ? `✅ Agreement reached: ${data.finalPrice} JPYC`
+          : '❌ No agreement',
+      };
+      setAgent1Messages((prev) => [...prev, systemMsg]);
+      setAgent2Messages((prev) => [...prev, systemMsg]);
 
-    stream2.onerror = () => {
-      stream2.close();
-    };
+      if (data.success) {
+        setDemoStep('completed');
+      } else {
+        setDemoStep('failed');
+      }
+    });
+
+    eventSource.addEventListener('error', (event) => {
+      console.error('[Stream] Error:', event);
+      eventSource.close();
+    });
+
+    eventSource.addEventListener('done', () => {
+      eventSource.close();
+    });
   };
 
   // フルデモシナリオ実行
