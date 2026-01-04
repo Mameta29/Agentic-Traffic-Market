@@ -53,8 +53,16 @@ export async function buildAgentContext(
         : { type: 'patrol', deadline: null, priority: 'low', destinationImportance: 3 };
 
       strategy = agentId === 1
-        ? { maxWillingToPay: 500, minAcceptableOffer: 300, patienceLevel: 2 }
-        : { maxWillingToPay: 150, minAcceptableOffer: 400, patienceLevel: 8 };
+        ? { 
+            maxWillingToPay: 500, 
+            minAcceptableOffer: 200, // 受け取る側になった場合
+            patienceLevel: 2 
+          }
+        : { 
+            maxWillingToPay: 200, // 払う側になった場合
+            minAcceptableOffer: 350, // 400から350に下げる（交渉余地を作る）
+            patienceLevel: 8 
+          };
     }
 
     // JPYC残高を取得

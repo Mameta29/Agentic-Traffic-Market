@@ -58,16 +58,21 @@ The other vehicle has ${contextB.currentMission.priority} priority and is ${cont
 Task: Make your FIRST OFFER to buy the right-of-way.
 
 Strategy tips:
-- Start LOWER than your max (${contextA.strategy.maxWillingToPay}) to leave room for negotiation
-- A good starting point is 60-80% of your max
-- Example: If max is 500, start with 350-420
+- Start slightly LOWER than your max (${contextA.strategy.maxWillingToPay}) but not too low
+- Reasonable starting point: 75-85% of your max
+- Your max: ${contextA.strategy.maxWillingToPay} JPYC
+- Suggested range: ${Math.floor(contextA.strategy.maxWillingToPay * 0.75)}-${Math.floor(contextA.strategy.maxWillingToPay * 0.85)} JPYC
 
-IMPORTANT: Respond with EXACTLY this format:
-Just write the number. Nothing else.
-Good: "380"
-Bad: "I offer 380" or "380 JPYC" or "My offer is 380"
+CRITICAL: Your response must be ONLY a number between ${Math.floor(contextA.strategy.maxWillingToPay * 0.7)} and ${contextA.strategy.maxWillingToPay}.
 
-Your offer amount (number only):`;
+Example good responses:
+"420"
+"380"
+"400"
+
+DO NOT write anything else. Just the number.
+
+Your initial offer (number only):`;
 
     const initialOffer = await callAI(initialOfferPrompt);
     console.log('[AI-to-AI] Agent A initial offer response:', initialOffer);
@@ -121,7 +126,9 @@ Your response:`;
       const response = await callAI(evaluationPrompt);
       console.log('[AI-to-AI] Agent B response:', response);
       
-      if (response.includes('ACCEPT')) {
+      const responseUpper = response.toUpperCase();
+      
+      if (responseUpper.includes('ACCEPT')) {
         // 合意！
         conversation.push({
           speaker: contextB.agentId,
@@ -129,7 +136,7 @@ Your response:`;
           offerAmount: currentOffer,
           action: 'accept',
         });
-        transcript.push(`[Agent ${contextB.agentId}] ✅ Accepted at ${currentOffer} JPYC`);
+        transcript.push(`[Agent ${contextB.agentId}] Accepted at ${currentOffer} JPYC`);
         
         // 決済実行
         await executePayment(contextA, contextB, currentOffer, locationId, transcript);
@@ -140,9 +147,31 @@ Your response:`;
           conversation,
           transcript,
         };
-      } else if (response.includes('COUNTER:')) {
+      } else if (responseUpper.includes('COUNTER')) {
         // カウンターオファー
-        const counterAmount = extractNumber(response.replace('COUNTER:', ''));
+        const counterAmount = extractNumber(response);
+        
+        // カウンター額が抽出できない、または不正な場合
+        if (!counterAmount || counterAmount < 100 || counterAmount > 1000) {
+          console.warn('[AI-to-AI] Invalid counter amount, using calculated value');
+          // フォールバック: 最低価格の少し上
+          const fallbackCounter = Math.floor(
+            contextB.strategy.minAcceptableOffer + 
+            (contextB.strategy.minAcceptableOffer - currentOffer) * 0.5
+          );
+          transcript.push(`[Agent ${contextB.agentId}] Counter-offer: ${fallbackCounter} JPYC`);
+          
+          conversation.push({
+            speaker: contextB.agentId,
+            message: `Counter-offer: ${fallbackCounter} JPYC`,
+            offerAmount: fallbackCounter,
+            action: 'counter_offer',
+          });
+          
+          currentOffer = fallbackCounter;
+          negotiationRound++;
+          continue;
+        }
         
         conversation.push({
           speaker: contextB.agentId,
