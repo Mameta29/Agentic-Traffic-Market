@@ -124,6 +124,8 @@ contract TrafficAgentContract is ReentrancyGuard {
         if (amount == 0) revert ZeroAmount();
 
         // JPYC送金実行
+        // msg.sender（AI agent）が承認を持っていることが前提
+        // または、このコントラクト自体がJPYCを保持
         bool success = jpycToken.transfer(seller, amount);
         if (!success) revert TransferFailed();
 
