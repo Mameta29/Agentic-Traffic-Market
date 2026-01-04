@@ -64,11 +64,12 @@
   ],
   "supportedTrust": ["validation"],
   "metadata": {
-    "role": "seller",
+    "rolePreference": "seller",
+    "role": "flexible",
     "agentType": "tourist_vehicle",
     "economicClass": "lower",
     "strategy": "money_over_time",
-    "description": "観光客、お金が欲しい、時間に余裕あり、常に譲る側"
+    "description": "観光客。時間に余裕あり。お金が欲しい。通常はSellerになるが、AIが状況を判断して決定する"
   },
   "currentContext": {
     "mission": {

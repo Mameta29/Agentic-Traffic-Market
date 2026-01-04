@@ -14,14 +14,28 @@ export const env = {
     process.env.AVALANCHE_RPC_URL || 'https://api.avax-test.network/ext/bc/C/rpc',
   chainId: Number.parseInt(process.env.CHAIN_ID || '43113', 10),
 
-  // Agent Private Keys (デモ用 - Phase 1)
+  // Multi-user Setup (User = Human, Agent = AI)
+  user1Eoa: (process.env.USER_1_EOA || '') as `0x${string}`,
+  user1PrivateKey: process.env.USER_1_PRIVATE_KEY || '',
+  agent1Eoa: (process.env.AGENT_1_EOA || '') as `0x${string}`,
+  agent1PrivateKey: process.env.AGENT_1_PRIVATE_KEY || '',
+
+  user2Eoa: (process.env.USER_2_EOA || '') as `0x${string}`,
+  user2PrivateKey: process.env.USER_2_PRIVATE_KEY || '',
+  agent2Eoa: (process.env.AGENT_2_EOA || '') as `0x${string}`,
+  agent2PrivateKey: process.env.AGENT_2_PRIVATE_KEY || '',
+
+  // Legacy (backward compatibility)
   agentAPrivateKey: process.env.AGENT_A_PRIVATE_KEY || '',
   agentBPrivateKey: process.env.AGENT_B_PRIVATE_KEY || '',
 
-  // Contract Addresses (Foundryデプロイ後に設定)
+  // Contract Addresses
   jpycContractAddress: (process.env.JPYC_CONTRACT_ADDRESS || '') as `0x${string}`,
   agentIdentityRegistry: (process.env.AGENT_IDENTITY_REGISTRY || '') as `0x${string}`,
   trafficAgentContract: (process.env.TRAFFIC_AGENT_CONTRACT || '') as `0x${string}`,
+
+  // App URL (for tokenURI)
+  appUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
 
   // Redis (オプション)
   redisUrl: process.env.REDIS_URL,

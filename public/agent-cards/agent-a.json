@@ -82,11 +82,12 @@
   ],
   "supportedTrust": ["validation"],
   "metadata": {
-    "role": "buyer",
+    "rolePreference": "buyer",
+    "role": "flexible",
     "agentType": "premium_delivery_drone",
     "economicClass": "upper",
     "strategy": "time_over_money",
-    "description": "金持ち、時間が最重要、常に支払う側"
+    "description": "高優先度配送ドローン。時間が最重要。通常はBuyerになるが、AIが状況を判断して決定する"
   },
   "currentContext": {
     "mission": {
