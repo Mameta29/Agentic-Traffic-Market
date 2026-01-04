@@ -14,3 +14,4 @@ export interface ClientToServerEvents {
   'agent:message': (data: { from: string; to: string; message: string }) => void;
 }
 
+

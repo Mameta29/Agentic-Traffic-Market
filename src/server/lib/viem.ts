@@ -69,3 +69,4 @@ export function getWalletByAddress(address: Address) {
   throw new Error(`未知のアドレス: ${address}`);
 }
 
+

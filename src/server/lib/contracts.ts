@@ -51,3 +51,4 @@ export const JPYC_CONTRACT_ADDRESS =
  */
 export const JPYC_DECIMALS = 18;
 
+

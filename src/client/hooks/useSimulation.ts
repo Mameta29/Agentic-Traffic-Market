@@ -128,6 +128,33 @@ export function useSimulation() {
     []
   );
 
+  // 本物のAI-to-AIネゴシエーション（会話形式）
+  const negotiateAItoAI = useCallback(
+    async (agent1Id: number, agent2Id: number, locationId: string) => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/simulation/negotiate-ai-to-ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            agent1Id,
+            agent2Id,
+            locationId,
+          }),
+        });
+        const data = await response.json();
+        console.log('[useSimulation] AI-to-AI negotiation result:', data);
+        return data;
+      } catch (error) {
+        console.error('[useSimulation] AI-to-AI negotiate error:', error);
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
   // リセット
   const reset = useCallback(async () => {
     setIsLoading(true);
@@ -153,6 +180,7 @@ export function useSimulation() {
     start,
     negotiate,
     negotiateDynamic,
+    negotiateAItoAI,
     reset,
   };
 }

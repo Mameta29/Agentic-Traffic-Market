@@ -38,3 +38,4 @@ export function formatJpycAmount(amount: bigint): string {
   return formatUnits(amount, JPYC_DECIMALS);
 }
 
+

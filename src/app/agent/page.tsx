@@ -41,9 +41,9 @@ export default function AgentDashboard() {
       // AI思考プロセスをターミナルに表示
       streamAgentThinking(1, 2, simulation.collisionLocation);
       
-      // 動的ネゴシエーション実行（役割はAIが決定）
+      // 本物のAI-to-AIネゴシエーション実行
       if (simulation.agents.length >= 2) {
-        simulation.negotiateDynamic(
+        simulation.negotiateAItoAI(
           1, // Agent 1 ID
           2, // Agent 2 ID
           simulation.collisionLocation
