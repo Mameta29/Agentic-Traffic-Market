@@ -33,6 +33,28 @@ const trafficAgentAbi = [
     stateMutability: 'view',
     type: 'function',
   },
+  // エラー定義
+  {
+    type: 'error',
+    name: 'BidExceedsMaximum',
+    inputs: [
+      { name: 'bid', type: 'uint256' },
+      { name: 'maximum', type: 'uint256' },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'DailyLimitExceeded',
+    inputs: [
+      { name: 'requested', type: 'uint256' },
+      { name: 'remaining', type: 'uint256' },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'AgentNotWhitelisted',
+    inputs: [],
+  },
 ] as const;
 
 /**

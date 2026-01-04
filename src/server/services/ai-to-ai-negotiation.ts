@@ -50,27 +50,28 @@ Your situation:
 - Priority: ${contextA.currentMission.priority}
 - Deadline: ${contextA.currentMission.deadline ? `${Math.floor((contextA.currentMission.deadline - Date.now()) / 60000)} minutes remaining` : 'No deadline'}
 - Current balance: ${contextA.balance} JPYC
-- Maximum you can pay: ${contextA.strategy.maxWillingToPay} JPYC
+- Maximum you want to pay: ${contextA.strategy.maxWillingToPay} JPYC
+
+IMPORTANT CONTRACT LIMITATION:
+The smart contract has a maximum bid limit of 500 JPYC per transaction.
+Even if you're willing to pay ${contextA.strategy.maxWillingToPay}, you CANNOT offer more than 500.
 
 You've collided with another vehicle at intersection ${locationId}.
-The other vehicle has ${contextB.currentMission.priority} priority and is ${contextB.currentMission.type === 'patrol' ? 'not urgent' : 'also busy'}.
+The other vehicle has ${contextB.currentMission.priority} priority and is ${contextB.currentMission.type === 'leisure' ? 'just touring (not urgent)' : 'also busy'}.
 
 Task: Make your FIRST OFFER to buy the right-of-way.
 
 Strategy tips:
-- Start slightly LOWER than your max (${contextA.strategy.maxWillingToPay}) but not too low
-- Reasonable starting point: 75-85% of your max
-- Your max: ${contextA.strategy.maxWillingToPay} JPYC
-- Suggested range: ${Math.floor(contextA.strategy.maxWillingToPay * 0.75)}-${Math.floor(contextA.strategy.maxWillingToPay * 0.85)} JPYC
+- Contract max: 500 JPYC (hard limit)
+- Start at 70-80% of contract max
+- Suggested range: 350-420 JPYC
 
-CRITICAL: Your response must be ONLY a number between ${Math.floor(contextA.strategy.maxWillingToPay * 0.7)} and ${contextA.strategy.maxWillingToPay}.
+CRITICAL: Your response must be a number between 300 and 500.
 
-Example good responses:
-"420"
+Example responses:
 "380"
-"400"
-
-DO NOT write anything else. Just the number.
+"420"
+"450"
 
 Your initial offer (number only):`;
 
