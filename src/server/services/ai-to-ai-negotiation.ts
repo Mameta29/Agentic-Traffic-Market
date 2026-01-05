@@ -378,21 +378,19 @@ async function executePayment(
       transcript.push('[System] Simulated payment (contracts not deployed)');
       transcript.push(`[System] ${amount} JPYC: User ${buyer.agentId} → User ${seller.agentId}`);
     } else {
-      // 正しいEIP-7702実装を使用
-      console.log('[Payment] Using correct EIP-7702 implementation');
-      console.log('[Payment] Agent Key:', agentKey.substring(0, 10) + '...');
-      console.log('[Payment] User EOA:', userEOA);
+      // Phase 1実装を使用（動作確認済み）
+      // Phase 2でAgent EOA + authorizationListに移行予定
+      console.log('[Payment] Executing payment (Phase 1 implementation)');
       
-      const txHash = await executeEIP7702BidCorrect(
+      const txHash = await executeEIP7702Bid(
         agentKey as `0x${string}`,
-        userEOA,
         seller.wallet as Address,
         amount,
         locationId
       );
 
       transcript.push(`[System] Payment confirmed: ${txHash}`);
-      transcript.push(`[System] ${amount} JPYC: User ${userEOA} → User ${seller.wallet}`);
+      transcript.push(`[System] ${amount} JPYC sent via blockchain`);
     }
   } catch (error) {
     console.error('[Payment] Error:', error);
