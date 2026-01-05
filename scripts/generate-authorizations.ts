@@ -8,7 +8,8 @@ import { createWalletClient, http } from 'viem';
 import { avalancheFuji } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 
-const TRAFFIC_AGENT_CONTRACT = '0xC196330F11B18973274419E7Fa2cf954Aff98BE8';
+// Sepolia
+const SEPOLIA_TRAFFIC_AGENT_CONTRACT = '0x1a61a82Ab9874FFFBE9aC6F00479d5c8ae2EC142';
 
 // User秘密鍵（Authorization署名用のみ、実行には使わない）
 const USER_1_PRIVATE_KEY = '0x0d507fb5997d1eb936d74675d9b113fd9104d1b0a9c0b55aaf508283a613a251';
@@ -26,13 +27,13 @@ async function generateAuthorizations() {
   });
 
   console.log('User 1 EOA:', user1Account.address);
-  console.log('Signing authorization for TrafficAgentContract...\n');
+  console.log('Signing authorization for Sepolia TrafficAgentContract...\n');
 
   try {
     // @ts-ignore - viem experimentalの型
     const auth1 = await user1Client.signAuthorization({
-      contractAddress: TRAFFIC_AGENT_CONTRACT,
-      chainId: 43113,
+      contractAddress: SEPOLIA_TRAFFIC_AGENT_CONTRACT,
+      chainId: 11155111, // Sepolia
     });
 
     console.log('User 1 Authorization:');
@@ -53,13 +54,13 @@ async function generateAuthorizations() {
   });
 
   console.log('User 2 EOA:', user2Account.address);
-  console.log('Signing authorization for TrafficAgentContract...\n');
+  console.log('Signing authorization for Sepolia TrafficAgentContract...\n');
 
   try {
     // @ts-ignore
     const auth2 = await user2Client.signAuthorization({
-      contractAddress: TRAFFIC_AGENT_CONTRACT,
-      chainId: 43113,
+      contractAddress: SEPOLIA_TRAFFIC_AGENT_CONTRACT,
+      chainId: 11155111, // Sepolia
     });
 
     console.log('User 2 Authorization:');

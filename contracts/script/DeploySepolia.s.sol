@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import "forge-std/Script.sol";
 import "../src/MockJPYC.sol";
-import "../src/TrafficAgentContract.sol";
+import "../src/TrafficAgentContractV2.sol";
 import "../src/AgentIdentityRegistry.sol";
 
 /**
@@ -34,13 +34,13 @@ contract DeploySepolia is Script {
         console.log("AgentIdentityRegistry deployed at:", address(registry));
         console.log("");
 
-        // 3. TrafficAgentContract デプロイ
-        console.log("Deploying TrafficAgentContract...");
-        TrafficAgentContract trafficAgent = new TrafficAgentContract(
+        // 3. TrafficAgentContractV2 デプロイ
+        console.log("Deploying TrafficAgentContractV2...");
+        TrafficAgentContractV2 trafficAgent = new TrafficAgentContractV2(
             address(jpyc),
             deployer
         );
-        console.log("TrafficAgentContract deployed at:", address(trafficAgent));
+        console.log("TrafficAgentContractV2 deployed at:", address(trafficAgent));
         console.log("");
 
         // 4. 初期配布

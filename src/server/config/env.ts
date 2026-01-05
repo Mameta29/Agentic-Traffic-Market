@@ -37,6 +37,13 @@ export const env = {
   // App URL (for tokenURI)
   appUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
 
+  // Sepolia Network (EIP-7702 Full Implementation)
+  sepoliaRpcUrl: process.env.SEPOLIA_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com',
+  sepoliaChainId: Number.parseInt(process.env.SEPOLIA_CHAIN_ID || '11155111', 10),
+  sepoliaJpycContract: (process.env.SEPOLIA_JPYC_CONTRACT || '') as `0x${string}`,
+  sepoliaAgentRegistry: (process.env.SEPOLIA_AGENT_IDENTITY_REGISTRY || '') as `0x${string}`,
+  sepoliaTrafficContract: (process.env.SEPOLIA_TRAFFIC_AGENT_CONTRACT || '') as `0x${string}`,
+
   // Redis (オプション)
   redisUrl: process.env.REDIS_URL,
 } as const;

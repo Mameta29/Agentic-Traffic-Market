@@ -1,0 +1,27 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "user1": {
+    "userEOA": "0xE2F2E032B02584e81437bA8Df18F03d6771F9d23",
+    "authorization": {
+      "address": "0x1a61a82Ab9874FFFBE9aC6F00479d5c8ae2EC142",
+      "chainId": 11155111,
+      "nonce": 28,
+      "r": "0x726baab7948ad9875582081ab810bb60d943e97a0233adacaadc5e6ced9cf24d",
+      "s": "0x46e184d4b606e5395714ea01c2de758bcadb1e01e39dcb077ba0fd17c94213e4",
+      "yParity": 1
+    }
+  },
+  "user2": {
+    "userEOA": "0xF2431b618B5b02923922c525885DBfFcdb9DE853",
+    "authorization": {
+      "address": "0x1a61a82Ab9874FFFBE9aC6F00479d5c8ae2EC142",
+      "chainId": 11155111,
+      "nonce": 1,
+      "r": "0xd936d4f2fdaaca877d7acf8250f276b45f6c1d63e4372239253e77071de2946b",
+      "s": "0x3807e74c073a0cde9f093a9e810c0c476068f6112aee1afb6601c34d89eaad31",
+      "yParity": 1
+    }
+  }
+}
+
