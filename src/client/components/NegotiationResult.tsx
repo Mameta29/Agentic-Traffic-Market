@@ -18,12 +18,12 @@ interface NegotiationResultProps {
  * AIによる動的役割決定の結果を可視化
  */
 export function NegotiationResult({ result }: NegotiationResultProps) {
-  if (!result) return null;
-
+  // 常に表示（結果がない場合はプレースホルダー）
   return (
     <Card glow="cyan" className="w-full">
       <CardContent className="p-4">
-        {result.success ? (
+        {result ? (
+          result.success ? (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-400" />
@@ -109,6 +109,33 @@ export function NegotiationResult({ result }: NegotiationResultProps) {
             <p className="text-sm text-gray-400">
               Both agents could not reach an agreement
             </p>
+          </div>
+        )
+        ) : (
+          // プレースホルダー（ネゴシエーション待機中）
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full border-2 border-gray-600 animate-pulse" />
+              <h3 className="text-gray-500 font-bold">Negotiation Pending</h3>
+            </div>
+
+            <div className="bg-slate-800 p-3 rounded space-y-2">
+              <p className="text-xs text-gray-600 font-semibold uppercase">
+                Waiting for collision...
+              </p>
+              <div className="text-sm text-gray-700">
+                <span>Agent ? (Buyer) ↔ Agent ? (Seller)</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Agreed Price:</span>
+              <span className="text-lg font-bold text-gray-700">--- JPYC</span>
+            </div>
+
+            <div className="text-xs text-gray-700 text-center py-2">
+              Start demo to see AI negotiation in action
+            </div>
           </div>
         )}
       </CardContent>

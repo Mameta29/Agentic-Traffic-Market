@@ -205,8 +205,8 @@ export default function AgentDashboard() {
               )}
             </div>
 
-            {/* ネゴシエーション結果 */}
-            {negotiationResult && <NegotiationResult result={negotiationResult} />}
+          {/* ネゴシエーション結果（常に表示、段階的に埋まる） */}
+          <NegotiationResult result={negotiationResult} />
 
             {/* ターミナル */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">

@@ -228,18 +228,36 @@ export function resolveCollision(agentId: string): void {
     : (state.agents.get('agent-2') || state.agents.get('agent-b'))?.id;
 
   if (sellerAgent) {
-    // Sellerが横にずれる
-    updateAgentState(agentId, {
-      state: 'moving',
-      position: { lat: 35.70, lng: 139.76 },
-    });
+    // 1. Sellerが横にずれる（すれ違いの動き）
+    setTimeout(() => {
+      updateAgentState(agentId, {
+        state: 'moving',
+        position: { lat: 35.70, lng: 139.76 }, // 右にずれる
+      });
+    }, 500);
+
+    // 3秒後: Sellerが元の経路に戻る
+    setTimeout(() => {
+      if (sellerAgent.destination) {
+        updateAgentState(agentId, {
+          state: 'moving',
+          position: sellerAgent.destination,
+        });
+      }
+    }, 3000);
   }
 
   if (buyerAgentId) {
-    // Buyerが進行再開
-    updateAgentState(buyerAgentId, {
-      state: 'moving',
-    });
+    // 2. Buyerが進行再開（すれ違いながら通過）
+    setTimeout(() => {
+      const agent = state.agents.get(buyerAgentId);
+      if (agent) {
+        updateAgentState(buyerAgentId, {
+          state: 'moving',
+          position: { lat: 35.72, lng: 139.75 }, // コリジョン地点を通過
+        });
+      }
+    }, 2000);
 
     // 5秒後に目的地到達
     setTimeout(() => {
@@ -247,7 +265,7 @@ export function resolveCollision(agentId: string): void {
       if (agent) {
         updateAgentState(buyerAgentId, {
           state: 'idle',
-          position: agent.destination || agent.position,
+          position: agent.destination || { lat: 35.75, lng: 139.85 },
         });
         console.log(`[Simulation] ✅ Agent ${buyerAgentId} reached destination`);
         stopSimulation();
