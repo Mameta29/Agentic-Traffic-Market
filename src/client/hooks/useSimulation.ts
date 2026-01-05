@@ -130,20 +130,25 @@ export function useSimulation() {
 
   // 本物のAI-to-AIネゴシエーション（会話形式）
   const negotiateAItoAI = useCallback(
-    async (agent1Id: number, agent2Id: number, locationId: string) => {
+    async (agent1Id: number, agent2Id: number, locationId: string, network: 'fuji' | 'sepolia' = 'fuji') => {
       setIsLoading(true);
       try {
-        const response = await fetch('/api/simulation/negotiate-ai-to-ai', {
+        const endpoint = network === 'sepolia' 
+          ? '/api/simulation/negotiate-network'
+          : '/api/simulation/negotiate-ai-to-ai';
+          
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             agent1Id,
             agent2Id,
             locationId,
+            network,
           }),
         });
         const data = await response.json();
-        console.log('[useSimulation] AI-to-AI negotiation result:', data);
+        console.log(`[useSimulation] Negotiation result (${network}):`, data);
         return data;
       } catch (error) {
         console.error('[useSimulation] AI-to-AI negotiate error:', error);

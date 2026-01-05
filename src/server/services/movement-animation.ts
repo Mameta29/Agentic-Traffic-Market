@@ -14,7 +14,7 @@ interface MovementTask {
   duration: number; // ミリ秒
 }
 
-const activeMov ements: Map<string, MovementTask> = new Map();
+const activeMovements: Map<string, MovementTask> = new Map();
 
 /**
  * エージェントを目的地まで滑らかに移動させる
@@ -83,4 +83,5 @@ export function stopMovement(agentId: string): void {
 export function stopAllMovements(): void {
   activeMovements.clear();
 }
+
 

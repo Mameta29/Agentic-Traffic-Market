@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MapViewEnhanced } from '@/client/features/map/MapViewEnhanced';
 import { ThinkingTerminal } from '@/client/features/terminal/ThinkingTerminal';
 import { AgentCard } from '@/client/features/agent/AgentCard';
@@ -64,11 +64,14 @@ export default function AgentDashboard() {
   // コリジョン検出時に自動ネゴシエーション開始（動的役割決定版）
   useEffect(() => {
     if (simulation.collisionDetected && simulation.collisionLocation && demoStep === 'running') {
-      console.log('[Dashboard] Collision detected! Starting AI-to-AI negotiation...');
+      console.log(`[Dashboard] Collision detected! Starting negotiation on ${selectedNetwork}...`);
       setDemoStep('negotiating');
       
       // ネゴシエーションプロセスをストリーミング表示
       streamNegotiation(simulation.collisionLocation);
+      
+      // ネットワーク対応のネゴシエーション実行
+      startNetworkAwareNegotiation(simulation.collisionLocation, selectedNetwork);
     }
   }, [simulation.collisionDetected, demoStep]);
 
@@ -82,7 +85,7 @@ export default function AgentDashboard() {
       const data = JSON.parse(event.data);
       
       // Negotiation Resultにも段階的に追加
-      setNegotiationResult((prev) => ({
+      setNegotiationResult((prev: any) => ({
         ...prev,
         transcript: [...(prev?.transcript || []), data.message],
       }));
@@ -163,9 +166,27 @@ export default function AgentDashboard() {
     console.log('[Dashboard] Starting Sepolia demo (Phase 2 - EIP-7702)...');
     setSelectedNetwork('sepolia');
     setDemoStep('running');
-    // TODO: Sepolia用のsimulation実装
     await simulation.start();
   };
+
+  // ネゴシエーションをネットワーク対応で実行
+  const startNetworkAwareNegotiation = useCallback((locationId: string, network: 'fuji' | 'sepolia') => {
+    console.log(`[Dashboard] Starting negotiation on ${network}...`);
+    
+    if (simulation.agents.length >= 2) {
+      simulation.negotiateAItoAI(1, 2, locationId, network).then((result) => {
+        setNegotiationResult(result);
+        
+        if (result?.success) {
+          console.log(`[Dashboard] Negotiation successful on ${network}!`);
+          setDemoStep('completed');
+        } else {
+          console.log('[Dashboard] Negotiation failed');
+          setDemoStep('failed');
+        }
+      });
+    }
+  }, [simulation]);
 
   // リセット
   const handleReset = async () => {

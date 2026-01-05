@@ -62,3 +62,4 @@ export const PREDEFINED_LOCATIONS: Record<string, Location> = {
   },
 };
 
+
