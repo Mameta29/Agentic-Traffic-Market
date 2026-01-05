@@ -247,28 +247,30 @@ export function resolveCollision(agentId: string): void {
   });
 
   if (sellerAgent) {
-    // 1. Sellerは待機（その場で止まったまま）
-    updateAgentState(agentId, {
-      state: 'idle', // movingではなくidle
-      position: { lat: 35.70, lng: 139.76 }, // 少し横
-    });
-    
-    console.log(`[Simulation] Seller (${agentId}) waiting for buyer to pass...`);
+    // 1. Sellerは少し横にずれて待機
+    setTimeout(() => {
+      updateAgentState(agentId, {
+        state: 'idle',
+        position: { lat: 35.70, lng: 139.76 },
+      });
+      console.log(`[Simulation] Seller (${agentId}) moved aside, waiting...`);
+    }, 500);
   }
 
   if (buyerAgentId) {
-    // 2. Buyerが即座に進行再開（すれ違いながら通過）
+    // 2. Buyerが通過（1秒後から開始）
     setTimeout(() => {
       const agent = state.agents.get(buyerAgentId);
       if (agent) {
         updateAgentState(buyerAgentId, {
           state: 'moving',
-          position: { lat: 35.72, lng: 139.75 }, // コリジョン地点を通過
+          position: { lat: 35.72, lng: 139.75 },
         });
+        console.log(`[Simulation] Buyer (${buyerAgentId}) passing through...`);
       }
     }, 1000);
 
-    // 3秒後: Buyerが目的地の近くへ
+    // 3秒後: Buyerが目的地近くへ
     setTimeout(() => {
       const agent = state.agents.get(buyerAgentId);
       if (agent) {
@@ -279,7 +281,7 @@ export function resolveCollision(agentId: string): void {
       }
     }, 3000);
 
-    // 5秒後に目的地到達
+    // 5秒後: Buyerが目的地到達
     setTimeout(() => {
       const agent = state.agents.get(buyerAgentId);
       if (agent) {
@@ -288,30 +290,35 @@ export function resolveCollision(agentId: string): void {
           position: agent.destination || { lat: 35.75, lng: 139.85 },
         });
         console.log(`[Simulation] ✅ Buyer (${buyerAgentId}) reached destination`);
-        
-        // 6秒後: Sellerも目的地に向かう
-        setTimeout(() => {
-          if (sellerAgent.destination) {
-            updateAgentState(agentId, {
-              state: 'moving',
-              position: sellerAgent.destination,
-            });
-            console.log(`[Simulation] Seller (${agentId}) resuming journey`);
-          }
-        }, 1000);
-        
-        stopSimulation();
       }
     }, 5000);
+
+    // 6秒後: Sellerが目的地に向かう
+    setTimeout(() => {
+      if (sellerAgent?.destination) {
+        updateAgentState(agentId, {
+          state: 'moving',
+          position: sellerAgent.destination,
+        });
+        console.log(`[Simulation] Seller (${agentId}) resuming journey`);
+      }
+    }, 6000);
+
+    // 8秒後: シミュレーション停止
+    setTimeout(() => {
+      stopSimulation();
+    }, 8000);
   }
 
-  // 混雑状態をクリア
-  if (state.collisionLocation) {
-    clearCongestion(state.collisionLocation);
-  }
-
-  state.collisionDetected = false;
-  state.collisionLocation = null;
+  // 混雑状態をクリア（アニメーション完了後）
+  setTimeout(() => {
+    if (state.collisionLocation) {
+      clearCongestion(state.collisionLocation);
+    }
+    state.collisionDetected = false;
+    state.collisionLocation = null;
+    console.log('[Simulation] Collision state cleared.');
+  }, 8500);
 
   console.log('[Simulation] Collision resolved. Traffic flowing.');
 }
