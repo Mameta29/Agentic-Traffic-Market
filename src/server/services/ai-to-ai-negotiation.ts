@@ -82,16 +82,21 @@ Your initial offer (number only):`;
     let offerAmount = extractNumber(initialOffer);
     
     if (!offerAmount || offerAmount === 0) {
-      // フォールバック
-      offerAmount = Math.floor(contextA.strategy.maxWillingToPay * 0.6);
+      // フォールバック: 日次制限を考慮
+      offerAmount = 150; // 安全な値
+    }
+    
+    // 日次制限対応: 190以上の場合は調整
+    if (offerAmount > 190) {
+      offerAmount = 150 + Math.random() * 30; // 150-180
+      console.log('[AI-to-AI] Adjusted for daily limit:', offerAmount);
     }
     
     // AIが整数を返した場合のみ、小数点を追加
     if (Number.isInteger(offerAmount) && offerAmount > 0) {
-      // より自然な小数点（0-99セント）
       const cents = Math.floor(Math.random() * 100);
       offerAmount = Number.parseFloat(`${offerAmount}.${cents < 10 ? '0' + cents : cents}`);
-      console.log('[AI-to-AI] Converted to micropayment:', offerAmount);
+      console.log('[AI-to-AI] Converted to micropayment:', offerAmount.toFixed(2));
     }
     
     conversation.push({
