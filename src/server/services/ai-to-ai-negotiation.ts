@@ -78,14 +78,19 @@ Your initial offer (number only):`;
     const initialOffer = await callAI(initialOfferPrompt);
     console.log('[AI-to-AI] Agent A initial offer response:', initialOffer);
     
-    let offerAmount = extractNumber(initialOffer) || Math.floor(contextA.strategy.maxWillingToPay * 0.7);
+    let offerAmount = extractNumber(initialOffer);
     
-    // AIが整数を返した場合、小数点を追加してマイクロペイメントにする
+    if (!offerAmount || offerAmount === 0) {
+      // フォールバック
+      offerAmount = Math.floor(contextA.strategy.maxWillingToPay * 0.6);
+    }
+    
+    // AIが整数を返した場合のみ、小数点を追加
     if (Number.isInteger(offerAmount) && offerAmount > 0) {
-      // ランダムな小数部分を追加（.01-.99）
-      const decimal = Math.floor(Math.random() * 99) + 1;
-      offerAmount = Number.parseFloat(`${offerAmount}.${decimal < 10 ? '0' + decimal : decimal}`);
-      console.log('[AI-to-AI] Adding micropayment precision:', offerAmount);
+      // より自然な小数点（0-99セント）
+      const cents = Math.floor(Math.random() * 100);
+      offerAmount = Number.parseFloat(`${offerAmount}.${cents < 10 ? '0' + cents : cents}`);
+      console.log('[AI-to-AI] Converted to micropayment:', offerAmount);
     }
     
     conversation.push({
@@ -275,7 +280,7 @@ async function callAI(prompt: string): Promise<string> {
     const result = await streamText({
       model: google(GEMINI_MODEL),
       messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
+      temperature: 1.2, // 0.7→1.2：より創造的な応答
       maxTokens: 300,
     });
 

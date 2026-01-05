@@ -27,16 +27,21 @@ export default function AgentDashboard() {
   const [demoStep, setDemoStep] = useState<string>('ready');
   const [negotiationResult, setNegotiationResult] = useState<any>(null);
   
-  // JPYC残高を定期的に更新
+  // JPYC残高をリアルタイム更新
+  const [agentBalances, setAgentBalances] = useState<Record<string, string>>({});
+  
   useEffect(() => {
     const interval = setInterval(async () => {
       if (simulation.agents.length >= 2) {
-        // Agent A, Bの残高を更新
         try {
           const balanceA = await fetch(`/api/agent/balance?address=${simulation.agents[0].address}`).then(r => r.json());
           const balanceB = await fetch(`/api/agent/balance?address=${simulation.agents[1].address}`).then(r => r.json());
           
-          // 残高が変わっていたら更新（状態管理は後で実装）
+          setAgentBalances({
+            [simulation.agents[0].address]: balanceA.balance,
+            [simulation.agents[1].address]: balanceB.balance,
+          });
+          
           console.log('[Dashboard] Balance updated:', { 
             agentA: balanceA.balance,
             agentB: balanceB.balance 
@@ -225,14 +230,20 @@ export default function AgentDashboard() {
         <div className="col-span-12 lg:col-span-5 h-full overflow-y-auto">
           <div className="flex flex-col gap-4 pb-4">
             {/* エージェントカード */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-              {simulation.agents.length > 0 && (
-                <>
-                  <AgentCard agent={simulation.agents[0]} />
-                  <AgentCard agent={simulation.agents[1]} />
-                </>
-              )}
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+            {simulation.agents.length > 0 && (
+              <>
+                <AgentCard 
+                  agent={simulation.agents[0]} 
+                  liveBalance={agentBalances[simulation.agents[0].address]}
+                />
+                <AgentCard 
+                  agent={simulation.agents[1]}
+                  liveBalance={agentBalances[simulation.agents[1].address]}
+                />
+              </>
+            )}
+          </div>
 
           {/* ネゴシエーション結果（常に表示、段階的に埋まる） */}
           <NegotiationResult result={negotiationResult} />

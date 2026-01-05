@@ -8,12 +8,13 @@ import type { Agent } from '@/types/agent';
 interface AgentCardProps {
   agent: Agent;
   onStartNegotiation?: () => void;
+  liveBalance?: string; // リアルタイム残高
 }
 
 /**
  * エージェント情報表示カード
  */
-export function AgentCard({ agent, onStartNegotiation }: AgentCardProps) {
+export function AgentCard({ agent, onStartNegotiation, liveBalance }: AgentCardProps) {
   // Agent IDからカラーを決定（役割ではなく）
   const agentLetter = agent.id === 'agent-1' || agent.id === 'agent-a' ? 'A' : 'B';
   const roleColor = agentLetter === 'A' ? 'green' : 'pink';
@@ -67,14 +68,14 @@ export function AgentCard({ agent, onStartNegotiation }: AgentCardProps) {
           </div>
         </div>
 
-        {/* Balance */}
-        {agent.balance && (
+        {/* Balance（リアルタイム更新） */}
+        {(liveBalance || agent.balance) && (
           <div className="flex items-center gap-2">
             <Coins className="w-4 h-4 text-yellow-400" />
             <div className="flex-1">
               <p className="text-xs text-gray-500">JPYC Balance</p>
               <p className="text-sm text-gray-300 font-mono">
-                {Number.parseFloat(agent.balance).toFixed(2)} JPYC
+                {Number.parseFloat(liveBalance || agent.balance || '0').toFixed(2)} JPYC
               </p>
             </div>
           </div>
