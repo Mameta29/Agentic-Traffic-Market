@@ -43,11 +43,33 @@ export default function AgentDashboard() {
     }
   }, [simulation.collisionDetected, demoStep]);
 
-  // ネゴシエーションをストリーミングで可視化
+  // ネゴシエーションをストリーミングで可視化（段階的表示）
   const streamNegotiation = (locationId: string) => {
     const eventSource = new EventSource(
       `/api/negotiation/stream?agent1Id=1&agent2Id=2&locationId=${locationId}`
     );
+
+    eventSource.addEventListener('progress', (event) => {
+      const data = JSON.parse(event.data);
+      
+      // System/Agent メッセージを適切なターミナルに表示
+      if (data.message.includes('[Agent 1]')) {
+        setAgent1Messages((prev) => [...prev, {
+          role: 'assistant',
+          content: data.message
+        }]);
+      } else if (data.message.includes('[Agent 2]')) {
+        setAgent2Messages((prev) => [...prev, {
+          role: 'assistant',
+          content: data.message
+        }]);
+      } else if (data.message.includes('[System]')) {
+        // Systemメッセージは両方に表示
+        const msg = { role: 'system', content: data.message };
+        setAgent1Messages((prev) => [...prev, msg]);
+        setAgent2Messages((prev) => [...prev, msg]);
+      }
+    });
 
     eventSource.addEventListener('turn', (event) => {
       const data = JSON.parse(event.data);
@@ -70,20 +92,11 @@ export default function AgentDashboard() {
       // ネゴシエーション結果を設定
       setNegotiationResult({
         success: data.success,
-        buyer: { agentId: 1 }, // 会話から決定
+        buyer: { agentId: 1 },
         seller: { agentId: 2 },
         agreedPrice: data.finalPrice,
         transcript: data.transcript,
       });
-
-      const systemMsg = {
-        role: 'system',
-        content: data.success
-          ? `✅ Agreement reached: ${data.finalPrice} JPYC`
-          : '❌ No agreement',
-      };
-      setAgent1Messages((prev) => [...prev, systemMsg]);
-      setAgent2Messages((prev) => [...prev, systemMsg]);
 
       if (data.success) {
         setDemoStep('completed');
