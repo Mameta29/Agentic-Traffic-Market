@@ -54,9 +54,9 @@ export function NegotiationResult({ result }: NegotiationResultProps) {
               </span>
             </div>
 
-            {/* トランザクションログ */}
+            {/* トランザクションログ（段階的表示） */}
             <div className="text-xs max-h-40 overflow-y-auto space-y-1">
-              {result.transcript.map((line, i) => {
+              {result.transcript?.map((line, i) => {
                 const isError = line.includes('[Error]');
                 const isSystem = line.includes('[System]');
                 const isAgent = line.includes('[Agent');

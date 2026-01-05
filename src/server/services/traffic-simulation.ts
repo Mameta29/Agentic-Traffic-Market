@@ -228,27 +228,17 @@ export function resolveCollision(agentId: string): void {
     : (state.agents.get('agent-2') || state.agents.get('agent-b'))?.id;
 
   if (sellerAgent) {
-    // 1. Sellerが横にずれる（すれ違いの動き）
-    setTimeout(() => {
-      updateAgentState(agentId, {
-        state: 'moving',
-        position: { lat: 35.70, lng: 139.76 }, // 右にずれる
-      });
-    }, 500);
-
-    // 3秒後: Sellerが元の経路に戻る
-    setTimeout(() => {
-      if (sellerAgent.destination) {
-        updateAgentState(agentId, {
-          state: 'moving',
-          position: sellerAgent.destination,
-        });
-      }
-    }, 3000);
+    // 1. Sellerは待機（その場で止まったまま）
+    updateAgentState(agentId, {
+      state: 'idle', // movingではなくidle
+      position: { lat: 35.70, lng: 139.76 }, // 少し横
+    });
+    
+    console.log(`[Simulation] Seller (${agentId}) waiting for buyer to pass...`);
   }
 
   if (buyerAgentId) {
-    // 2. Buyerが進行再開（すれ違いながら通過）
+    // 2. Buyerが即座に進行再開（すれ違いながら通過）
     setTimeout(() => {
       const agent = state.agents.get(buyerAgentId);
       if (agent) {
@@ -257,7 +247,18 @@ export function resolveCollision(agentId: string): void {
           position: { lat: 35.72, lng: 139.75 }, // コリジョン地点を通過
         });
       }
-    }, 2000);
+    }, 1000);
+
+    // 3秒後: Buyerが目的地の近くへ
+    setTimeout(() => {
+      const agent = state.agents.get(buyerAgentId);
+      if (agent) {
+        updateAgentState(buyerAgentId, {
+          state: 'moving',
+          position: { lat: 35.74, lng: 139.82 },
+        });
+      }
+    }, 3000);
 
     // 5秒後に目的地到達
     setTimeout(() => {
@@ -267,7 +268,19 @@ export function resolveCollision(agentId: string): void {
           state: 'idle',
           position: agent.destination || { lat: 35.75, lng: 139.85 },
         });
-        console.log(`[Simulation] ✅ Agent ${buyerAgentId} reached destination`);
+        console.log(`[Simulation] ✅ Buyer (${buyerAgentId}) reached destination`);
+        
+        // 6秒後: Sellerも目的地に向かう
+        setTimeout(() => {
+          if (sellerAgent.destination) {
+            updateAgentState(agentId, {
+              state: 'moving',
+              position: sellerAgent.destination,
+            });
+            console.log(`[Simulation] Seller (${agentId}) resuming journey`);
+          }
+        }, 1000);
+        
         stopSimulation();
       }
     }, 5000);

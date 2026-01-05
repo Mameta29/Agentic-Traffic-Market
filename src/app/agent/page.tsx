@@ -52,6 +52,12 @@ export default function AgentDashboard() {
     eventSource.addEventListener('progress', (event) => {
       const data = JSON.parse(event.data);
       
+      // Negotiation Resultにも段階的に追加
+      setNegotiationResult((prev) => ({
+        ...prev,
+        transcript: [...(prev?.transcript || []), data.message],
+      }));
+      
       // System/Agent メッセージを適切なターミナルに表示
       if (data.message.includes('[Agent 1]')) {
         setAgent1Messages((prev) => [...prev, {
