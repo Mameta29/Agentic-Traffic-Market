@@ -26,6 +26,7 @@ export default function AgentDashboard() {
 
   const [demoStep, setDemoStep] = useState<string>('ready');
   const [negotiationResult, setNegotiationResult] = useState<any>(null);
+  const [selectedNetwork, setSelectedNetwork] = useState<'fuji' | 'sepolia'>('fuji');
   
   // JPYC残高をリアルタイム更新
   const [agentBalances, setAgentBalances] = useState<Record<string, string>>({});
@@ -149,12 +150,20 @@ export default function AgentDashboard() {
     });
   };
 
-  // フルデモシナリオ実行
-  const handleStartFullDemo = async () => {
-    console.log('[Dashboard] Starting full demo scenario...');
+  // フルデモシナリオ実行（Avalanche Fuji）
+  const handleStartFujiDemo = async () => {
+    console.log('[Dashboard] Starting Fuji demo (Phase 1)...');
+    setSelectedNetwork('fuji');
     setDemoStep('running');
-    
-    // シミュレーション開始（2秒後にコリジョン発生）
+    await simulation.start();
+  };
+
+  // Sepoliaデモ実行（EIP-7702完全実装）
+  const handleStartSepoliaDemo = async () => {
+    console.log('[Dashboard] Starting Sepolia demo (Phase 2 - EIP-7702)...');
+    setSelectedNetwork('sepolia');
+    setDemoStep('running');
+    // TODO: Sepolia用のsimulation実装
     await simulation.start();
   };
 
@@ -198,15 +207,28 @@ export default function AgentDashboard() {
 
         {/* コントロールボタン */}
         <div className="ml-auto flex items-center gap-2">
+          {/* Fujiデモボタン */}
           <Button 
             variant="primary" 
             size="sm" 
-            onClick={handleStartFullDemo}
+            onClick={handleStartFujiDemo}
             disabled={simulation.isRunning || simulation.isLoading}
           >
             <Play className="w-4 h-4 mr-2" />
-            Start Full Demo
+            Start Demo (Fuji)
           </Button>
+          
+          {/* Sepoliaデモボタン */}
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={handleStartSepoliaDemo}
+            disabled={simulation.isRunning || simulation.isLoading}
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            EIP-7702 Demo (Sepolia)
+          </Button>
+          
           <Button 
             variant="ghost" 
             size="sm" 
