@@ -5,6 +5,7 @@ import { google, GEMINI_MODEL } from '../lib/vertex-ai';
 import { getVercelAITools } from '@/mcp-server';
 import { resolveCollision } from './traffic-simulation';
 import { executeEIP7702Bid } from '../lib/eip-7702';
+import { executeEIP7702BidCorrect } from '../lib/eip-7702-correct';
 import { env } from '../config/env';
 import type { AgentContext } from '@/types/agent-context';
 import type { Address } from 'viem';
@@ -359,27 +360,39 @@ async function executePayment(
   const sellerAgentId = seller.agentId === 1 ? 'agent-1' : 'agent-2';
 
   try {
-    const buyerKey = buyer.agentId === 1 ? env.agentAPrivateKey : env.agentBPrivateKey;
+    // 正しい実装: Agent秘密鍵とUser EOAを使用
+    const agentKey = buyer.agentId === 1 
+      ? (env.agent1PrivateKey || env.agentAPrivateKey)
+      : (env.agent2PrivateKey || env.agentBPrivateKey);
+    
+    const userEOA = buyer.wallet as Address;
 
-    if (!buyerKey) {
-      console.warn('[Payment] Buyer private key not available, simulating payment');
-      transcript.push('[System] Simulated payment (private key not configured)');
-      transcript.push(`[System] ${amount} JPYC: Agent ${buyer.agentId} → Agent ${seller.agentId}`);
+    if (!agentKey) {
+      console.warn('[Payment] Agent private key not available, simulating payment');
+      transcript.push('[System] Simulated payment (agent key not configured)');
+      transcript.push(`[System] ${amount} JPYC: User ${buyer.agentId} → User ${seller.agentId}`);
     } else if (
       !env.jpycContractAddress ||
       env.jpycContractAddress === '0x0000000000000000000000000000000000000000'
     ) {
       transcript.push('[System] Simulated payment (contracts not deployed)');
-      transcript.push(`[System] ${amount} JPYC: Agent ${buyer.agentId} → Agent ${seller.agentId}`);
+      transcript.push(`[System] ${amount} JPYC: User ${buyer.agentId} → User ${seller.agentId}`);
     } else {
-      const txHash = await executeEIP7702Bid(
-        buyerKey as `0x${string}`,
+      // 正しいEIP-7702実装を使用
+      console.log('[Payment] Using correct EIP-7702 implementation');
+      console.log('[Payment] Agent Key:', agentKey.substring(0, 10) + '...');
+      console.log('[Payment] User EOA:', userEOA);
+      
+      const txHash = await executeEIP7702BidCorrect(
+        agentKey as `0x${string}`,
+        userEOA,
         seller.wallet as Address,
         amount,
         locationId
       );
 
       transcript.push(`[System] Payment confirmed: ${txHash}`);
+      transcript.push(`[System] ${amount} JPYC: User ${userEOA} → User ${seller.wallet}`);
     }
   } catch (error) {
     console.error('[Payment] Error:', error);

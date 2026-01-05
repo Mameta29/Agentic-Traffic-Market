@@ -214,37 +214,37 @@ function triggerCollision(): void {
  * Agent Bが道を譲る
  */
 export function resolveCollision(agentId: string): void {
+  console.log('[Simulation] resolveCollision called with:', agentId);
+  console.log('[Simulation] Current collision state:', {
+    detected: state.collisionDetected,
+    location: state.collisionLocation,
+    agents: Array.from(state.agents.keys())
+  });
+  
   if (!state.collisionDetected) {
-    console.log('[Simulation] No collision to resolve');
-    return;
+    console.warn('[Simulation] No collision detected, ignoring resolve call');
+    // 強制的に実行（デモ継続のため）
   }
 
   console.log(`[Simulation] ✅ Resolving collision - ${agentId} moves aside`);
   
-  // 全agentを検索
-  let sellerAgent = state.agents.get(agentId);
-  if (!sellerAgent) {
-    // agentId変換を試みる
-    const possibleIds = ['agent-1', 'agent-2', 'agent-a', 'agent-b'];
-    for (const id of possibleIds) {
-      const agent = state.agents.get(id);
-      if (agent && (agent.id === agentId || id === agentId)) {
-        sellerAgent = agent;
-        break;
-      }
-    }
-  }
+  // agentIdをそのまま使用（agent-1, agent-2など）
+  const sellerAgent = state.agents.get(agentId);
   
   // Buyerを特定（Sellerではない方）
   let buyerAgentId: string | undefined;
   for (const [id, agent] of state.agents.entries()) {
-    if (agent.id !== sellerAgent?.id && id !== agentId) {
+    if (id !== agentId) {
       buyerAgentId = id;
       break;
     }
   }
   
-  console.log('[Simulation] Resolved IDs:', { seller: agentId, buyer: buyerAgentId });
+  console.log('[Simulation] Resolved IDs:', { 
+    seller: agentId, 
+    sellerFound: !!sellerAgent,
+    buyer: buyerAgentId 
+  });
 
   if (sellerAgent) {
     // 1. Sellerは待機（その場で止まったまま）
