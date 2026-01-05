@@ -55,11 +55,31 @@ export function NegotiationResult({ result }: NegotiationResultProps) {
             </div>
 
             {/* トランザクションログ */}
-            <div className="text-xs max-h-32 overflow-y-auto space-y-1">
+            <div className="text-xs max-h-40 overflow-y-auto space-y-1">
               {result.transcript.map((line, i) => {
                 const isError = line.includes('[Error]');
                 const isSystem = line.includes('[System]');
                 const isAgent = line.includes('[Agent');
+                
+                // トランザクションハッシュを検出してリンク化
+                const txMatch = line.match(/0x[a-fA-F0-9]{64}/);
+                
+                if (txMatch) {
+                  const txHash = txMatch[0];
+                  return (
+                    <p key={i} className="text-green-400">
+                      [System] Payment confirmed:{' '}
+                      <a
+                        href={`https://testnet.snowtrace.io/tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-yellow-400 hover:text-yellow-300 underline"
+                      >
+                        {txHash.substring(0, 10)}...{txHash.substring(txHash.length - 8)}
+                      </a>
+                    </p>
+                  );
+                }
                 
                 return (
                   <p
