@@ -263,20 +263,33 @@ Respond:`;
  * AIを呼び出してテキスト応答を取得
  */
 async function callAI(prompt: string): Promise<string> {
-  const result = await streamText({
-    model: google(GEMINI_MODEL),
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.3, // より決定論的に（1.0 → 0.3）
-    maxTokens: 200, // 100 → 200（十分な長さ）
-  });
+  try {
+    const result = await streamText({
+      model: google(GEMINI_MODEL),
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      maxTokens: 300,
+    });
 
-  let response = '';
-  for await (const chunk of result.textStream) {
-    response += chunk;
+    let response = '';
+    for await (const chunk of result.textStream) {
+      response += chunk;
+    }
+
+    console.log('[AI Call] Full response:', response);
+    
+    if (!response || response.trim().length === 0) {
+      console.error('[AI Call] Empty response from Gemini');
+      // フォールバック: 妥当なデフォルト値
+      return '400';
+    }
+    
+    return response.trim();
+  } catch (error) {
+    console.error('[AI Call] Error:', error);
+    // エラー時のフォールバック
+    return '400';
   }
-
-  console.log('[AI Call] Full response:', response);
-  return response.trim();
 }
 
 /**
