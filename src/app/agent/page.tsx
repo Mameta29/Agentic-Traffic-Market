@@ -67,11 +67,9 @@ export default function AgentDashboard() {
       console.log(`[Dashboard] Collision detected! Starting negotiation on ${selectedNetwork}...`);
       setDemoStep('negotiating');
       
-      // ネゴシエーションプロセスをストリーミング表示（ネットワーク指定）
+      // ネゴシエーションプロセスをストリーミング表示のみ（ネットワーク指定）
+      // streamNegotiation内で完結するため、startNetworkAwareNegotiationは不要
       streamNegotiation(simulation.collisionLocation, selectedNetwork);
-      
-      // ネットワーク対応のネゴシエーション実行
-      startNetworkAwareNegotiation(simulation.collisionLocation, selectedNetwork);
     }
   }, [simulation.collisionDetected, demoStep]);
 

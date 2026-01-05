@@ -43,8 +43,8 @@ export async function POST(request: Request) {
     (context1 as any).network = network;
     (context2 as any).network = network;
 
-    // ネゴシエーション実行
-    const result = await negotiateAItoAI(context1, context2, locationId);
+    // ネゴシエーション実行（network引数を渡す）
+    const result = await negotiateAItoAI(context1, context2, locationId, network);
 
     return Response.json({
       success: result.success,

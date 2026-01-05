@@ -105,6 +105,7 @@ export async function executeEIP7702BidCorrect(
       functionName: 'bidForRightOfWay',
       args: [sellerAddress, amountInWei, locationId],
       authorizationList: [authorization as any], // EIP-7702!
+      gas: 200000n, // EIP-7702トランザクション用に明示的にガス指定
     });
 
     console.log(`[EIP-7702] Transaction hash: ${hash}`);
