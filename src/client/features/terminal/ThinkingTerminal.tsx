@@ -66,7 +66,7 @@ export function ThinkingTerminal({ messages, agentName, agentRole }: ThinkingTer
 function MessageBlock({ message, role }: { message: Message; role: 'buyer' | 'seller' }) {
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
-  const isTool = message.role === 'tool';
+  const isTool = message.role === 'data'; // 'tool' → 'data' (Vercel AI SDK v4)
 
   if (isUser) {
     return (

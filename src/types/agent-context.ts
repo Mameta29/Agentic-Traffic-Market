@@ -45,7 +45,7 @@ export interface SituationEvaluation {
   agentId: number;
   willingToPay: number | null; // null = not willing to pay
   willingToAccept: number | null; // null = not willing to wait
-  preferredAction: 'pay_and_pass' | 'wait_for_payment' | 'find_alternative';
+  preferredAction: 'pay_to_pass' | 'wait_for_payment' | 'find_alternative';
   reasoning: string;
   urgencyScore: number; // 0-100
 }

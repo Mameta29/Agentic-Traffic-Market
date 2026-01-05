@@ -48,7 +48,7 @@ export async function initializeAgents(): Promise<Agent[]> {
       agents = [
         {
           id: 'agent-1',
-          role: agent1Info.role,
+          role: (agent1Info.role as 'buyer' | 'seller') || 'buyer',
           address: agent1Info.wallet,
           state: 'idle',
           position: { lat: 35.65, lng: 139.60 }, // 左下（大きく離す）
@@ -57,7 +57,7 @@ export async function initializeAgents(): Promise<Agent[]> {
         },
         {
           id: 'agent-2',
-          role: agent2Info.role,
+          role: (agent2Info.role as 'buyer' | 'seller') || 'seller',
           address: agent2Info.wallet,
           state: 'idle',
           position: { lat: 35.75, lng: 139.85 }, // 右上からスタート

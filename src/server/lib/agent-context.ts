@@ -30,9 +30,9 @@ export async function buildAgentContext(
       const context = card.currentContext || {};
 
       mission = {
-        type: context.mission?.type || 'patrol',
-        deadline: context.mission?.deadline || null,
-        priority: context.mission?.priority || 'medium',
+        type: (context.mission?.type as 'delivery' | 'patrol' | 'leisure' | 'emergency') || 'patrol',
+        deadline: (context.mission?.deadline as number) || null,
+        priority: (context.mission?.priority as 'high' | 'medium' | 'low') || 'medium',
         destinationImportance: context.mission?.destinationImportance || 5,
       };
 
@@ -40,7 +40,7 @@ export async function buildAgentContext(
         maxWillingToPay: context.negotiationStrategy?.maxWillingToPay || 500,
         minAcceptableOffer: context.negotiationStrategy?.minAcceptableOffer || 400,
         patienceLevel: context.negotiationStrategy?.patienceLevel || 5,
-        preferredRole: context.negotiationStrategy?.preferredRole || 'flexible',
+        preferredRole: (context.negotiationStrategy?.preferredRole as 'buyer' | 'seller' | 'flexible') || 'flexible',
       };
     } else {
       // Fallback: デフォルト値

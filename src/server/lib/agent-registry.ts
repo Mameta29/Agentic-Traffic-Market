@@ -70,11 +70,26 @@ export interface AgentCard {
     };
   }>;
   metadata: {
-    role: 'buyer' | 'seller';
+    role?: 'buyer' | 'seller' | 'flexible';
+    rolePreference?: 'buyer' | 'seller';
     agentType: string;
     maxBidPerTransaction?: string;
     dailyLimit?: string;
     [key: string]: any;
+  };
+  currentContext?: {
+    mission?: {
+      type: string;
+      priority: string;
+      destinationImportance: number;
+      deadline?: number | null;
+    };
+    negotiationStrategy?: {
+      maxWillingToPay: number;
+      minAcceptableOffer: number;
+      patienceLevel: number;
+      preferredRole?: string;
+    };
   };
   constraints: {
     maxBidPerTransaction: number;

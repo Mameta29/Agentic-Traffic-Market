@@ -9,8 +9,10 @@ import next from 'next';
 import { Server as SocketIOServer } from 'socket.io';
 
 const dev = process.env.NODE_ENV !== 'production';
-const hostname = process.env.HOSTNAME || 'localhost';
+const hostname = process.env.HOSTNAME || '0.0.0.0';
 const port = Number.parseInt(process.env.PORT || '3000', 10);
+
+console.log('Server configuration:', { dev, hostname, port, env: process.env.NODE_ENV });
 
 // Next.jsアプリケーションの初期化
 const nextApp = next({ dev, hostname, port });
@@ -56,11 +58,14 @@ nextApp.prepare().then(() => {
   });
 
   // サーバー起動
-  httpServer.listen(port, () => {
+  httpServer.listen(port, hostname, () => {
     console.log(`🚀 サーバー起動: http://${hostname}:${port}`);
     console.log(`⚡ 環境: ${dev ? '開発モード (HMR有効)' : '本番モード'}`);
     console.log(`🔌 Socket.io 準備完了`);
   });
+}).catch((err) => {
+  console.error('Server initialization failed:', err);
+  process.exit(1);
 });
 
 

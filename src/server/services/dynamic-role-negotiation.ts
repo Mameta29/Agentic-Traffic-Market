@@ -312,7 +312,7 @@ function fallbackEvaluation(context: AgentContext): SituationEvaluation {
       agentId: context.agentId,
       willingToPay: context.strategy.maxWillingToPay,
       willingToAccept: null,
-      preferredAction: 'pay_and_pass',
+      preferredAction: 'pay_to_pass',
       reasoning: 'High urgency detected (fallback)',
       urgencyScore: urgency,
     };

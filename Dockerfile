@@ -45,23 +45,23 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# 必要なファイルのみコピー
+# 全ファイルをコピー（カスタムサーバー使用のため）
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/server.ts ./server.ts
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
-# tsxをインストール (server.ts実行用)
-RUN corepack enable && pnpm add tsx
-
-USER nextjs
+# tsxをnpmでグローバルインストール
+RUN npm install -g tsx
 
 EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV NODE_ENV=production
 
-# カスタムサーバーで起動
-CMD ["npx", "tsx", "server.ts"]
+# グローバルにインストールしたtsxで起動
+CMD ["tsx", "server.ts"]
 
