@@ -1,9 +1,12 @@
 import 'server-only';
 
-import { type Address, type Hash, parseUnits } from 'viem';
-import { createAgentWalletClient, publicClient } from './viem';
+import { type Address, type Hash, parseUnits, createPublicClient, createWalletClient, http } from 'viem';
+import { avalancheFuji } from 'viem/chains';
+import { sepolia } from 'viem/chains';
+import { privateKeyToAccount } from 'viem/accounts';
 import { env } from '../config/env';
 import { getAuthorization } from './authorization-store';
+import authorizationsSepolia from './authorizations-sepolia.json';
 
 /**
  * 正しいEIP-7702実装
@@ -39,33 +42,50 @@ export async function executeEIP7702BidCorrect(
   userEOA: Address,
   sellerAddress: Address,
   bidAmount: number,
-  locationId: string
+  locationId: string,
+  network: 'fuji' | 'sepolia' = 'sepolia'
 ): Promise<Hash> {
   console.log('[EIP-7702] Correct implementation executing...');
+  console.log(`  Network: ${network}`);
   console.log(`  Agent Private Key: ${agentPrivateKey.substring(0, 10)}...`);
   console.log(`  User EOA (target): ${userEOA}`);
   console.log(`  Seller: ${sellerAddress}`);
   console.log(`  Amount: ${bidAmount} JPYC`);
 
-  if (!env.trafficAgentContract) {
-    throw new Error('TRAFFIC_AGENT_CONTRACT not configured');
+  // ネットワークに応じた設定
+  const chain = network === 'sepolia' ? sepolia : avalancheFuji;
+  const rpcUrl = network === 'sepolia' ? env.sepoliaRpcUrl : env.avalancheRpcUrl;
+  const trafficContract = network === 'sepolia' ? env.sepoliaTrafficContract : env.trafficAgentContract;
+
+  if (!trafficContract) {
+    throw new Error(`${network.toUpperCase()}_TRAFFIC_AGENT_CONTRACT not configured`);
   }
 
   try {
-    // Agent のウォレットクライアント作成
-    const agentWalletClient = createAgentWalletClient(agentPrivateKey);
-    const agentAccount = agentWalletClient.account;
+    // Agent のウォレットクライアント作成（ネットワーク指定）
+    const agentAccount = privateKeyToAccount(agentPrivateKey);
+    const agentWalletClient = createWalletClient({
+      account: agentAccount,
+      chain,
+      transport: http(rpcUrl),
+    });
 
     console.log(`  Agent EOA: ${agentAccount.address}`);
+    console.log(`  RPC URL: ${rpcUrl}`);
 
-    // Authorization取得（事前署名済み）
-    const authorization = getAuthorization(userEOA);
+    // Authorization取得（ネットワーク別）
+    const authorization = network === 'sepolia'
+      ? (authorizationsSepolia.user1.userEOA.toLowerCase() === userEOA.toLowerCase()
+          ? authorizationsSepolia.user1.authorization
+          : authorizationsSepolia.user2.authorization)
+      : getAuthorization(userEOA);
+
     if (!authorization) {
-      throw new Error(`No authorization found for ${userEOA}. User needs to sign EIP-7702 authorization first.`);
+      throw new Error(`No authorization found for ${userEOA} on ${network}`);
     }
 
     console.log('[EIP-7702] Using pre-signed authorization');
-    console.log('[EIP-7702] Authorization:', authorization);
+    console.log('[EIP-7702] Authorization ChainID:', authorization.chainId);
 
     // 金額をWei形式に変換（小数点対応）
     const amountInWei = parseUnits(bidAmount.toFixed(2), 18);
@@ -73,7 +93,7 @@ export async function executeEIP7702BidCorrect(
     console.log('[EIP-7702] Transaction details:', {
       agentEOA: agentAccount.address,
       userEOA: userEOA,
-      contract: env.trafficAgentContract,
+      contract: trafficContract,
       amountWei: amountInWei.toString(),
     });
 
@@ -89,7 +109,12 @@ export async function executeEIP7702BidCorrect(
 
     console.log(`[EIP-7702] Transaction hash: ${hash}`);
 
-    // トランザクション確認
+    // トランザクション確認（ネットワーク別クライアント）
+    const publicClient = createPublicClient({
+      chain,
+      transport: http(rpcUrl),
+    });
+
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
     console.log(`[EIP-7702] Transaction confirmed in block ${receipt.blockNumber}`);
 

@@ -403,7 +403,8 @@ async function executePayment(
           userEOA,
           seller.wallet as Address,
           amount,
-          locationId
+          locationId,
+          network
         );
 
         transcript.push(`[System] Payment confirmed (Sepolia): ${txHash}`);
