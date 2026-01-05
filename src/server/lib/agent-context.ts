@@ -113,7 +113,7 @@ export function createDemoContext(agentId: 1 | 2): AgentContext {
     // Agent A: 急いでいる配送ドローン
     return {
       agentId: 1,
-      wallet: '0x1234567890123456789012345678901234567890',
+      wallet: '0xE2F2E032B02584e81437bA8Df18F03d6771F9d23', // User 1 EOA
       currentMission: {
         type: 'delivery',
         deadline: Date.now() + 1800000, // 30分後
@@ -132,10 +132,10 @@ export function createDemoContext(agentId: 1 | 2): AgentContext {
       currentPosition: { lat: 35.6762, lng: 139.6503 },
     };
   } else {
-    // Agent B: のんびりパトロール車
+    // Agent B: 観光客
     return {
       agentId: 2,
-      wallet: '0x0987654321098765432109876543210987654321',
+      wallet: '0xF2431b618B5b02923922c525885DBfFcdb9DE853', // User 2 EOA
       currentMission: {
         type: 'patrol',
         deadline: null,

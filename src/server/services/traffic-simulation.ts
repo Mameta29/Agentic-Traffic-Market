@@ -78,19 +78,19 @@ export async function initializeAgents(): Promise<Agent[]> {
         {
           id: 'agent-a',
           role: 'buyer',
-          address: '0x1234567890123456789012345678901234567890', // デモ用
+          address: '0xE2F2E032B02584e81437bA8Df18F03d6771F9d23', // User 1 EOA
           state: 'idle',
-          position: { lat: 35.6762, lng: 139.6503 },
-          destination: { lat: 35.6812, lng: 139.7671 },
+          position: { lat: 35.65, lng: 139.60 },
+          destination: { lat: 35.75, lng: 139.85 },
           balance: '5000',
         },
         {
           id: 'agent-b',
           role: 'seller',
-          address: '0x0987654321098765432109876543210987654321', // デモ用
+          address: '0xF2431b618B5b02923922c525885DBfFcdb9DE853', // User 2 EOA
           state: 'idle',
-          position: { lat: 35.6812, lng: 139.7671 },
-          destination: { lat: 35.6762, lng: 139.6503 },
+          position: { lat: 35.75, lng: 139.85 },
+          destination: { lat: 35.65, lng: 139.60 },
           balance: '3000',
         },
       ];
