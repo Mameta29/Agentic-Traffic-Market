@@ -64,14 +64,14 @@ export async function buildAgentContext(
 
       strategy = agentId === 1
         ? { 
-            maxWillingToPay: 2000,      // 500→2000：金持ち、時間が大事
-            minAcceptableOffer: 10000,  // 200→10000：絶対にSellerにならない
-            patienceLevel: 1            // 2→1：超短気
+            maxWillingToPay: 500,       // コントラクト上限
+            minAcceptableOffer: 10000,  // 絶対にSellerにならない
+            patienceLevel: 1            // 超短気
           }
         : { 
-            maxWillingToPay: 50,        // 200→50：貧乏、払えない
-            minAcceptableOffer: 200,    // 450→200：安くても譲る（お金が欲しい）
-            patienceLevel: 10           // 8→10：超我慢強い
+            maxWillingToPay: 50,        // 貧乏、払えない
+            minAcceptableOffer: 150,    // マイクロペイメント対応
+            patienceLevel: 10           // 超我慢強い
           };
     }
 

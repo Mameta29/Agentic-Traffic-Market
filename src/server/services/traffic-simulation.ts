@@ -240,6 +240,19 @@ export function resolveCollision(agentId: string): void {
     updateAgentState(buyerAgentId, {
       state: 'moving',
     });
+
+    // 5秒後に目的地到達
+    setTimeout(() => {
+      const agent = state.agents.get(buyerAgentId);
+      if (agent) {
+        updateAgentState(buyerAgentId, {
+          state: 'idle',
+          position: agent.destination || agent.position,
+        });
+        console.log(`[Simulation] ✅ Agent ${buyerAgentId} reached destination`);
+        stopSimulation();
+      }
+    }, 5000);
   }
 
   // 混雑状態をクリア
@@ -250,17 +263,7 @@ export function resolveCollision(agentId: string): void {
   state.collisionDetected = false;
   state.collisionLocation = null;
 
-  console.log('[Simulation] Collision resolved. Agent A proceeding to destination.');
-
-  // 5秒後に目的地到達
-  setTimeout(() => {
-    updateAgentState('agent-a', {
-      state: 'idle',
-      position: { lat: 35.6812, lng: 139.7671 },
-    });
-    console.log('[Simulation] ✅ Agent A reached destination');
-    stopSimulation();
-  }, 5000);
+  console.log('[Simulation] Collision resolved. Traffic flowing.');
 }
 
 /**
