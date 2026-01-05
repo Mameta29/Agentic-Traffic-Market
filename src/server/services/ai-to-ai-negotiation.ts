@@ -293,26 +293,34 @@ async function callAI(prompt: string): Promise<string> {
 }
 
 /**
- * テキストから数値を抽出（改善版）
+ * テキストから数値を抽出（小数点対応）
  */
 function extractNumber(text: string): number {
-  // パターン1: "COUNTER:450" から450を抽出
-  const counterMatch = text.match(/COUNTER:\s*(\d+)/i);
+  // パターン1: "COUNTER:450.25" から450.25を抽出
+  const counterMatch = text.match(/COUNTER:\s*([\d.]+)/i);
   if (counterMatch) {
-    return Number.parseInt(counterMatch[1], 10);
+    return Number.parseFloat(counterMatch[1]);
   }
 
-  // パターン2: 単純な数値（"450" or "I offer 450"）
-  const numberMatch = text.match(/\b(\d{3,4})\b/); // 3-4桁の数字
-  if (numberMatch) {
-    return Number.parseInt(numberMatch[1], 10);
+  // パターン2: 小数点付き数値（"342.50" or "I offer 342.18"）
+  const decimalMatch = text.match(/\b(\d{2,3}\.\d{1,2})\b/);
+  if (decimalMatch) {
+    const num = Number.parseFloat(decimalMatch[1]);
+    if (num >= 50 && num <= 1000) {
+      return num;
+    }
   }
 
-  // パターン3: 最初に見つかった数値
-  const anyMatch = text.match(/\d+/);
+  // パターン3: 整数（"450"）
+  const intMatch = text.match(/\b(\d{3,4})\b/);
+  if (intMatch) {
+    return Number.parseInt(intMatch[1], 10);
+  }
+
+  // パターン4: 任意の数値
+  const anyMatch = text.match(/([\d.]+)/);
   if (anyMatch) {
-    const num = Number.parseInt(anyMatch[0], 10);
-    // 妥当な範囲チェック（50-1000 JPYC）
+    const num = Number.parseFloat(anyMatch[1]);
     if (num >= 50 && num <= 1000) {
       return num;
     }
