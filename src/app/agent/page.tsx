@@ -26,6 +26,29 @@ export default function AgentDashboard() {
 
   const [demoStep, setDemoStep] = useState<string>('ready');
   const [negotiationResult, setNegotiationResult] = useState<any>(null);
+  
+  // JPYC残高を定期的に更新
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (simulation.agents.length >= 2) {
+        // Agent A, Bの残高を更新
+        try {
+          const balanceA = await fetch(`/api/agent/balance?address=${simulation.agents[0].address}`).then(r => r.json());
+          const balanceB = await fetch(`/api/agent/balance?address=${simulation.agents[1].address}`).then(r => r.json());
+          
+          // 残高が変わっていたら更新（状態管理は後で実装）
+          console.log('[Dashboard] Balance updated:', { 
+            agentA: balanceA.balance,
+            agentB: balanceB.balance 
+          });
+        } catch (error) {
+          console.error('[Dashboard] Balance update error:', error);
+        }
+      }
+    }, 5000); // 5秒ごと
+
+    return () => clearInterval(interval);
+  }, [simulation.agents]);
 
   // 初期化
   useEffect(() => {
