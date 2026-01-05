@@ -388,20 +388,20 @@ async function executePayment(
       transcript.push('[System] Simulated payment (contracts not deployed)');
       transcript.push(`[System] ${amount} JPYC: User ${buyer.agentId} → User ${seller.agentId}`);
     } else {
-      // Phase 2実装: authorizationListでUser EOA呼び出し
-      console.log('[Payment] Executing payment (Phase 2: EIP-7702)');
-      console.log('[Payment] Agent → User EOA via authorization');
+      // Phase 1: Avalanche Fuji（EIP-7702未対応）
+      // Phase 2実装コードは eip-7702-correct.ts に完成済み
+      console.log('[Payment] Executing payment (Phase 1: Avalanche Fuji)');
+      console.log('[Payment] Agent EOA → TrafficAgentContract');
       
-      const txHash = await executeEIP7702BidCorrect(
+      const txHash = await executeEIP7702Bid(
         agentKey as `0x${string}`,
-        userEOA,
         seller.wallet as Address,
         amount,
         locationId
       );
 
       transcript.push(`[System] Payment confirmed: ${txHash}`);
-      transcript.push(`[System] ${amount} JPYC: User ${userEOA.substring(0, 10)}... → ${seller.wallet.substring(0, 10)}...`);
+      transcript.push(`[System] ${amount} JPYC sent via blockchain`);
     }
   } catch (error) {
     console.error('[Payment] Error:', error);
