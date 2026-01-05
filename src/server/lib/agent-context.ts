@@ -44,9 +44,10 @@ export async function buildAgentContext(
       };
     } else {
       // Fallback: デフォルト値
+      // 正しいUser EOAを使用
       wallet = agentId === 1 
-        ? '0x1234567890123456789012345678901234567890'
-        : '0x0987654321098765432109876543210987654321';
+        ? '0xE2F2E032B02584e81437bA8Df18F03d6771F9d23' // User 1 EOA
+        : '0xF2431b618B5b02923922c525885DBfFcdb9DE853'; // User 2 EOA
 
       mission = agentId === 1
         ? { 
