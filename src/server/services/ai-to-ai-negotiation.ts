@@ -78,7 +78,15 @@ Your initial offer (number only):`;
     const initialOffer = await callAI(initialOfferPrompt);
     console.log('[AI-to-AI] Agent A initial offer response:', initialOffer);
     
-    const offerAmount = extractNumber(initialOffer) || Math.floor(contextA.strategy.maxWillingToPay * 0.7);
+    let offerAmount = extractNumber(initialOffer) || Math.floor(contextA.strategy.maxWillingToPay * 0.7);
+    
+    // AIが整数を返した場合、小数点を追加してマイクロペイメントにする
+    if (Number.isInteger(offerAmount) && offerAmount > 0) {
+      // ランダムな小数部分を追加（.01-.99）
+      const decimal = Math.floor(Math.random() * 99) + 1;
+      offerAmount = Number.parseFloat(`${offerAmount}.${decimal < 10 ? '0' + decimal : decimal}`);
+      console.log('[AI-to-AI] Adding micropayment precision:', offerAmount);
+    }
     
     conversation.push({
       speaker: contextA.agentId,
