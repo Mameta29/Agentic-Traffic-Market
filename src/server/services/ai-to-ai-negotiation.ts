@@ -27,7 +27,8 @@ interface ConversationTurn {
 export async function negotiateAItoAI(
   contextA: AgentContext,
   contextB: AgentContext,
-  locationId: string
+  locationId: string,
+  network: 'fuji' | 'sepolia' = 'fuji'
 ): Promise<{
   success: boolean;
   finalPrice: number | null;
@@ -164,7 +165,7 @@ Your response:`;
         transcript.push(`[Agent ${contextB.agentId}] Accepted at ${currentOffer} JPYC`);
         
         // 決済実行
-        await executePayment(contextA, contextB, currentOffer, locationId, transcript);
+        await executePayment(contextA, contextB, currentOffer, locationId, transcript, network);
 
         return {
           success: true,
@@ -232,7 +233,7 @@ Respond:`;
           });
           transcript.push(`[Agent ${contextA.agentId}] ✅ Accepted at ${counterAmount} JPYC`);
 
-          await executePayment(contextA, contextB, counterAmount, locationId, transcript);
+          await executePayment(contextA, contextB, counterAmount, locationId, transcript, network);
 
           return {
             success: true,
@@ -362,9 +363,11 @@ async function executePayment(
   seller: AgentContext,
   amount: number,
   locationId: string,
-  transcript: string[]
+  transcript: string[],
+  network: 'fuji' | 'sepolia' = 'fuji'
 ): Promise<void> {
   transcript.push(`[System] Executing payment: ${amount} JPYC...`);
+  transcript.push(`[System] Network: ${network}`);
 
   // Seller側のエージェントIDを特定（常に実行）
   const sellerAgentId = seller.agentId === 1 ? 'agent-1' : 'agent-2';
@@ -376,6 +379,8 @@ async function executePayment(
       : (env.agent2PrivateKey || env.agentBPrivateKey);
     
     const userEOA = buyer.wallet as Address;
+    
+    console.log(`[Payment] Selected network: ${network}`);
 
     if (!agentKey) {
       console.warn('[Payment] Agent private key not available, simulating payment');
@@ -388,20 +393,36 @@ async function executePayment(
       transcript.push('[System] Simulated payment (contracts not deployed)');
       transcript.push(`[System] ${amount} JPYC: User ${buyer.agentId} → User ${seller.agentId}`);
     } else {
-      // Phase 1: Avalanche Fuji（EIP-7702未対応）
-      // Phase 2実装コードは eip-7702-correct.ts に完成済み
-      console.log('[Payment] Executing payment (Phase 1: Avalanche Fuji)');
-      console.log('[Payment] Agent EOA → TrafficAgentContract');
-      
-      const txHash = await executeEIP7702Bid(
-        agentKey as `0x${string}`,
-        seller.wallet as Address,
-        amount,
-        locationId
-      );
+      if (network === 'sepolia') {
+        // Phase 2: Ethereum Sepolia（EIP-7702完全実装）
+        console.log('[Payment] Executing payment (Phase 2: Ethereum Sepolia - EIP-7702)');
+        console.log('[Payment] Agent EOA → User EOA via authorizationList');
+        
+        const txHash = await executeEIP7702BidCorrect(
+          agentKey as `0x${string}`,
+          userEOA,
+          seller.wallet as Address,
+          amount,
+          locationId
+        );
 
-      transcript.push(`[System] Payment confirmed: ${txHash}`);
-      transcript.push(`[System] ${amount} JPYC sent via blockchain`);
+        transcript.push(`[System] Payment confirmed (Sepolia): ${txHash}`);
+        transcript.push(`[System] ${amount} JPYC: User EOA → User EOA (EIP-7702)`);
+      } else {
+        // Phase 1: Avalanche Fuji
+        console.log('[Payment] Executing payment (Phase 1: Avalanche Fuji)');
+        console.log('[Payment] Agent EOA → TrafficAgentContract');
+        
+        const txHash = await executeEIP7702Bid(
+          agentKey as `0x${string}`,
+          seller.wallet as Address,
+          amount,
+          locationId
+        );
+
+        transcript.push(`[System] Payment confirmed (Fuji): ${txHash}`);
+        transcript.push(`[System] ${amount} JPYC sent via blockchain`);
+      }
     }
   } catch (error) {
     console.error('[Payment] Error:', error);

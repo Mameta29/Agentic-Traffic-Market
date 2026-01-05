@@ -67,8 +67,8 @@ export default function AgentDashboard() {
       console.log(`[Dashboard] Collision detected! Starting negotiation on ${selectedNetwork}...`);
       setDemoStep('negotiating');
       
-      // ネゴシエーションプロセスをストリーミング表示
-      streamNegotiation(simulation.collisionLocation);
+      // ネゴシエーションプロセスをストリーミング表示（ネットワーク指定）
+      streamNegotiation(simulation.collisionLocation, selectedNetwork);
       
       // ネットワーク対応のネゴシエーション実行
       startNetworkAwareNegotiation(simulation.collisionLocation, selectedNetwork);
@@ -76,9 +76,9 @@ export default function AgentDashboard() {
   }, [simulation.collisionDetected, demoStep]);
 
   // ネゴシエーションをストリーミングで可視化（段階的表示）
-  const streamNegotiation = (locationId: string) => {
+  const streamNegotiation = (locationId: string, network: 'fuji' | 'sepolia' = 'fuji') => {
     const eventSource = new EventSource(
-      `/api/negotiation/stream?agent1Id=1&agent2Id=2&locationId=${locationId}`
+      `/api/negotiation/stream?agent1Id=1&agent2Id=2&locationId=${locationId}&network=${network}`
     );
 
     eventSource.addEventListener('progress', (event) => {

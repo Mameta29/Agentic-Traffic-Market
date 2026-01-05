@@ -38,8 +38,12 @@ export async function GET(request: Request) {
         // 段階的に表示するため、transcriptを順次送信
         sendEvent('progress', { message: '[System] Agent A making initial offer...' });
         
+        // ネットワーク指定（デフォルトはfuji）
+        const network = searchParams.get('network') as 'fuji' | 'sepolia' || 'fuji';
+        console.log(`[Negotiation Stream] Network: ${network}`);
+        
         // ネゴシエーション実行（進捗を送信）
-        const result = await negotiateAItoAI(context1, context2, locationId);
+        const result = await negotiateAItoAI(context1, context2, locationId, network);
 
         // transcriptを1つずつ段階的に送信
         for (const log of result.transcript) {
