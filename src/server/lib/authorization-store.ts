@@ -1,61 +1,40 @@
 import 'server-only';
 
+import authorizations from './authorizations.json';
+
 /**
  * EIP-7702 Authorization の保存・管理
  * 
- * 本来はRedisを使用すべきだが、デモ用にメモリ内ストア
+ * 事前署名されたAuthorizationを使用
  */
 
 interface Authorization {
+  address: string;
   chainId: number;
-  address: string; // TrafficAgentContract
-  nonce: bigint;
-  // 署名情報は省略（実装時に追加）
+  nonce: number;
+  r: string;
+  s: string;
+  yParity: number;
 }
 
-// メモリ内ストア（デモ用）
-const authorizationStore = new Map<string, Authorization>();
-
 /**
- * User の Authorization を保存
+ * User の Authorization を取得（事前署名済み）
  * 
  * @param userEOA User EOAアドレス
- * @param authorization EIP-7702 Authorization
+ * @returns Authorization
  */
-export function saveAuthorization(userEOA: string, authorization: Authorization): void {
-  const key = `auth:${userEOA}`;
-  authorizationStore.set(key, authorization);
-  console.log(`[Authorization] Saved for ${userEOA}`);
-}
+export function getAuthorization(userEOA: string): Authorization | null {
+  const lowerEOA = userEOA.toLowerCase();
 
-/**
- * User の Authorization を取得
- * 
- * @param userEOA User EOAアドレス
- * @returns Authorization または undefined
- */
-export function getAuthorization(userEOA: string): Authorization | undefined {
-  const key = `auth:${userEOA}`;
-  return authorizationStore.get(key);
-}
+  if (lowerEOA === authorizations.user1.userEOA.toLowerCase()) {
+    return authorizations.user1.authorization as Authorization;
+  }
 
-/**
- * デモ用: User がすでに Authorization に署名済みと仮定
- * 
- * 実際のフローでは、フロントエンドでUserがMetaMaskで署名する
- */
-export function createDemoAuthorization(
-  userEOA: string,
-  contractAddress: string
-): Authorization {
-  // デモ用の簡略版
-  const auth: Authorization = {
-    chainId: 43113,
-    address: contractAddress,
-    nonce: 0n,
-  };
+  if (lowerEOA === authorizations.user2.userEOA.toLowerCase()) {
+    return authorizations.user2.authorization as Authorization;
+  }
 
-  saveAuthorization(userEOA, auth);
-  return auth;
+  console.warn(`[Authorization] No authorization found for ${userEOA}`);
+  return null;
 }
 

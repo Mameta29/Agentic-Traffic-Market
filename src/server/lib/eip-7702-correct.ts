@@ -3,7 +3,7 @@ import 'server-only';
 import { type Address, type Hash, parseUnits } from 'viem';
 import { createAgentWalletClient, publicClient } from './viem';
 import { env } from '../config/env';
-import { createDemoAuthorization } from './authorization-store';
+import { getAuthorization } from './authorization-store';
 
 /**
  * 正しいEIP-7702実装
@@ -58,28 +58,33 @@ export async function executeEIP7702BidCorrect(
 
     console.log(`  Agent EOA: ${agentAccount.address}`);
 
-    // Authorization取得（デモ用: 自動作成）
-    // 実運用では、Userがフロントエンドで署名したものを取得
-    const authorization = createDemoAuthorization(userEOA, env.trafficAgentContract);
-    console.log('[EIP-7702] Using demo authorization (User would sign this in production)');
+    // Authorization取得（事前署名済み）
+    const authorization = getAuthorization(userEOA);
+    if (!authorization) {
+      throw new Error(`No authorization found for ${userEOA}. User needs to sign EIP-7702 authorization first.`);
+    }
+
+    console.log('[EIP-7702] Using pre-signed authorization');
+    console.log('[EIP-7702] Authorization:', authorization);
 
     // 金額をWei形式に変換（小数点対応）
     const amountInWei = parseUnits(bidAmount.toFixed(2), 18);
 
     console.log('[EIP-7702] Transaction details:', {
-      from: agentAccount.address,
-      to: env.trafficAgentContract,
+      agentEOA: agentAccount.address,
+      userEOA: userEOA,
+      contract: env.trafficAgentContract,
       amountWei: amountInWei.toString(),
     });
 
-    // 現在のPhase: 直接コントラクト呼び出し
-    // TODO Phase 2: User EOA を authorizationList で呼び出し
+    // Phase 2実装: authorizationListで User EOA を呼び出し
     const hash = await agentWalletClient.writeContract({
-      address: env.trafficAgentContract,
+      account: agentAccount,          // Agent EOA
+      address: userEOA,               // User EOA（target!）
       abi: trafficAgentAbi,
       functionName: 'bidForRightOfWay',
       args: [sellerAddress, amountInWei, locationId],
-      // authorizationList: [authorization], // Phase 2で実装
+      authorizationList: [authorization as any], // EIP-7702!
     });
 
     console.log(`[EIP-7702] Transaction hash: ${hash}`);

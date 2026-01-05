@@ -1,0 +1,25 @@
+{
+  "user1": {
+    "userEOA": "0xE2F2E032B02584e81437bA8Df18F03d6771F9d23",
+    "authorization": {
+      "address": "0xC196330F11B18973274419E7Fa2cf954Aff98BE8",
+      "chainId": 43113,
+      "nonce": 26,
+      "r": "0x0e38bf8a27773aeb6ea63ac99887836a2854734b3f362963290e3d48f5ca4bd5",
+      "s": "0x4c12a8aab0b8c770e1f35bf8f5d1434df0c2905f3da7656e42258d3d96702a6c",
+      "yParity": 0
+    }
+  },
+  "user2": {
+    "userEOA": "0xF2431b618B5b02923922c525885DBfFcdb9DE853",
+    "authorization": {
+      "address": "0xC196330F11B18973274419E7Fa2cf954Aff98BE8",
+      "chainId": 43113,
+      "nonce": 1,
+      "r": "0x63352f7cfba77c05e2a09d564e9ff3fdf2295a4ce81ce030c931a36ac9fdf472",
+      "s": "0x29378a944d712719eabce87de3bfabf785d2a30bd3851615f9951b83f62cc0de",
+      "yParity": 1
+    }
+  }
+}
+
