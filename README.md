@@ -4,21 +4,28 @@ AIエージェントがリアルタイムで物理的な「通行権」を交渉
 
 ## 🎯 プロジェクト概要
 
-このプロジェクトは、以下の技術を統合した先進的なデモンストレーションです:
-- **AIエージェント**: Google Vertex AI (Gemini Pro) による自律的な意思決定
-- **ブロックチェーン**: Avalanche Fuji Testnet上でJPYC決済
+このプロジェクトは、以下の技術を統合した先進的な実装です:
+- **AIエージェント**: Google Gemini 3 Flash Preview による自律的な意思決定
+- **ブロックチェーン**: Avalanche Fuji Testnet上でマイクロペイメント（小数点対応）
 - **リアルタイム通信**: Socket.ioによる位置情報同期
 - **Agent Standard**: Model Context Protocol (MCP) SDKによる標準化
+- **本番稼働**: GCP Cloud Runで公開中
+
+## 🌐 デモURL
+
+**Live Demo**: https://agentic-traffic-market-831529922100.us-central1.run.app
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 16.1 (App Router, Turbopack)
-- **AI Brain**: Google Vertex AI (Gemini 1.5 Pro) via `@ai-sdk/google`
+- **Frontend**: Next.js 16.1 (App Router), React 19
+- **AI Brain**: Google Gemini 3 Flash Preview via `@ai-sdk/google`
 - **Agent Standard**: Official MCP SDK (`@modelcontextprotocol/sdk`)
 - **Blockchain**: Viem v2.x (Avalanche Fuji Testnet, Chain ID: 43113)
-- **Real-time**: Socket.io
+- **Smart Contracts**: Solidity 0.8.28, Foundry
+- **Real-time**: Socket.io, Server-Sent Events
 - **Styling**: Tailwind CSS (Cyberpunk Theme)
-- **Tools**: Biome (Linter), TypeScript 5.x
+- **Deploy**: GCP Cloud Run, Docker
+- **Tests**: 38/38 passing
 
 ## 📁 プロジェクト構造
 
