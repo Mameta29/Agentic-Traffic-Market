@@ -96,8 +96,11 @@ Your initial offer (number only):`;
     if (Number.isInteger(offerAmount) && offerAmount > 0) {
       const cents = Math.floor(Math.random() * 100);
       offerAmount = Number.parseFloat(`${offerAmount}.${cents < 10 ? '0' + cents : cents}`);
-      console.log('[AI-to-AI] Converted to micropayment:', offerAmount.toFixed(2));
     }
+    
+    // 小数点を2桁に丸める
+    offerAmount = Math.round(offerAmount * 100) / 100;
+    console.log('[AI-to-AI] Final micropayment amount:', offerAmount);
     
     conversation.push({
       speaker: contextA.agentId,
@@ -115,32 +118,34 @@ Your initial offer (number only):`;
       transcript.push(`[System] Negotiation round ${negotiationRound}...`);
 
       // Agent Bがオファーを評価
-      const evaluationPrompt = `You are Agent ${contextB.agentId}, a ${contextB.currentMission.type} vehicle.
+      const evaluationPrompt = `You are Agent ${contextB.agentId}, a ${contextB.currentMission.type} tourist vehicle.
 
 Your situation:
-- Mission: ${contextB.currentMission.type}
-- Priority: ${contextB.currentMission.priority}
+- Mission: Leisure touring (NO urgency)
+- Priority: LOW
 - Alternative routes: ${contextB.alternativeRoutes.length} available
-- Minimum acceptable price: ${contextB.strategy.minAcceptableOffer} JPYC
+- Minimum acceptable: ${contextB.strategy.minAcceptableOffer} JPYC (but flexible)
 
-Agent ${contextA.agentId} has offered you ${currentOffer} JPYC to move aside.
+Agent ${contextA.agentId} has offered ${currentOffer} JPYC to pass.
+
+IMPORTANT: You are a budget tourist who needs money. Any reasonable offer is good!
 
 Analysis:
-- Current offer: ${currentOffer} JPYC
+- Offer: ${currentOffer} JPYC
 - Your minimum: ${contextB.strategy.minAcceptableOffer} JPYC
-- Difference: ${contextB.strategy.minAcceptableOffer - currentOffer} JPYC
 
-Decision:
-- If offer >= minimum (${currentOffer} >= ${contextB.strategy.minAcceptableOffer}): Respond "ACCEPT"
-- If offer is close (within 50): Respond "COUNTER:XXX" (replace XXX with your counter amount)
-- If offer is too low (100+ below): Respond "REJECT"
+Decision Rules (FOLLOW EXACTLY):
+1. If offer >= ${contextB.strategy.minAcceptableOffer}: ACCEPT immediately
+2. If offer >= 100 JPYC: ACCEPT (you need money!)
+3. If 50-99 JPYC: COUNTER with slightly higher amount
+4. If < 50 JPYC: REJECT
 
-CRITICAL: Respond with EXACTLY one of these:
-"ACCEPT"
-"COUNTER:450" (example if you want 450 JPYC)
-"REJECT"
+Current offer is ${currentOffer} JPYC.
+This is >= 100, so you should ACCEPT.
 
-No extra text. Just one of the three formats above.
+Respond EXACTLY:
+"ACCEPT" or "COUNTER:XXX" or "REJECT"
+
 Your response:`;
 
       const response = await callAI(evaluationPrompt);
