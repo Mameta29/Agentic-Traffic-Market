@@ -71,7 +71,7 @@ export async function buildAgentContext(
           }
         : { 
             maxWillingToPay: 50,        // 貧乏、払えない
-            minAcceptableOffer: 150,    // マイクロペイメント対応
+            minAcceptableOffer: 80,     // 150→80（残り198JPYCに対応）
             patienceLevel: 10           // 超我慢強い
           };
     }
