@@ -116,6 +116,9 @@ export default function AgentDashboard() {
     console.log('[Dashboard] Resetting simulation...');
     await simulation.reset();
     setDemoStep('ready');
+    setNegotiationResult(null);
+    setAgent1Messages([]);
+    setAgent2Messages([]);
   };
 
   return (

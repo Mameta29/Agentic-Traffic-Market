@@ -178,20 +178,26 @@ export async function startSimulation(): Promise<void> {
 function triggerCollision(): void {
   console.log('[Simulation] 🚨 COLLISION DETECTED at intersection LOC_001');
 
-  // コリジョン地点（中間地点）- 2つの初期位置の中間
+  // コリジョン地点（中間地点）
   const collisionPoint = { lat: 35.70, lng: 139.725 };
 
-  // Agent Aを停止
-  updateAgentState('agent-a', {
-    state: 'blocked',
-    position: collisionPoint,
-  });
+  // Agent 1, 2のIDを正しく使用
+  const agent1 = state.agents.get('agent-1') || state.agents.get('agent-a');
+  const agent2 = state.agents.get('agent-2') || state.agents.get('agent-b');
 
-  // Agent Bも停止（ブロッカー）
-  updateAgentState('agent-b', {
-    state: 'idle',
-    position: collisionPoint,
-  });
+  if (agent1) {
+    updateAgentState(agent1.id, {
+      state: 'blocked',
+      position: collisionPoint,
+    });
+  }
+
+  if (agent2) {
+    updateAgentState(agent2.id, {
+      state: 'idle',
+      position: collisionPoint,
+    });
+  }
 
   // 混雑状態を設定
   setCongestion('LOC_001', true, 'agent-b');
@@ -215,18 +221,26 @@ export function resolveCollision(agentId: string): void {
 
   console.log(`[Simulation] ✅ Resolving collision - ${agentId} moves aside`);
 
-  // Agent Bが移動
-  if (agentId === 'agent-b') {
-    updateAgentState('agent-b', {
+  // 正しいIDを使用
+  const sellerAgent = state.agents.get(agentId);
+  const buyerAgentId = agentId.includes('2') || agentId.includes('b') 
+    ? (state.agents.get('agent-1') || state.agents.get('agent-a'))?.id
+    : (state.agents.get('agent-2') || state.agents.get('agent-b'))?.id;
+
+  if (sellerAgent) {
+    // Sellerが横にずれる
+    updateAgentState(agentId, {
       state: 'moving',
-      position: { lat: 35.6787, lng: 139.7600 }, // 少し横にずれる
+      position: { lat: 35.70, lng: 139.76 },
     });
   }
 
-  // Agent Aが進行再開
-  updateAgentState('agent-a', {
-    state: 'moving',
-  });
+  if (buyerAgentId) {
+    // Buyerが進行再開
+    updateAgentState(buyerAgentId, {
+      state: 'moving',
+    });
+  }
 
   // 混雑状態をクリア
   if (state.collisionLocation) {
