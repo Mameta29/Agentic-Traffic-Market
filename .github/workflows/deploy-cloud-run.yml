@@ -49,15 +49,19 @@ jobs:
             --region ${{ env.REGION }} \
             --allow-unauthenticated \
             --port 3000 \
+            --set-env-vars "GOOGLE_CLOUD_PROJECT=${{ secrets.GOOGLE_CLOUD_PROJECT }}" \
             --set-env-vars "GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_AI_KEY }}" \
+            --set-env-vars "FUJI_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc" \
             --set-env-vars "JPYC_CONTRACT_ADDRESS=0xE50b2A73eCf5D93D1c885C2F676f8921F3CaCdcd" \
             --set-env-vars "AGENT_IDENTITY_REGISTRY=0xD41DBe68a4aBe9CcA352400Ba1240E27865cD1c1" \
             --set-env-vars "TRAFFIC_AGENT_CONTRACT=0xC196330F11B18973274419E7Fa2cf954Aff98BE8" \
-            --set-env-vars "USER_1_PRIVATE_KEY=${{ secrets.USER_1_PRIVATE_KEY }}" \
-            --set-env-vars "AGENT_1_PRIVATE_KEY=${{ secrets.AGENT_1_PRIVATE_KEY }}" \
-            --set-env-vars "USER_2_PRIVATE_KEY=${{ secrets.USER_2_PRIVATE_KEY }}" \
-            --set-env-vars "AGENT_2_PRIVATE_KEY=${{ secrets.AGENT_2_PRIVATE_KEY }}" \
-            --set-env-vars "AVALANCHE_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc" \
+            --set-env-vars "SEPOLIA_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com" \
+            --set-env-vars "SEPOLIA_JPYC_CONTRACT=${{ secrets.SEPOLIA_JPYC_CONTRACT }}" \
+            --set-env-vars "SEPOLIA_TRAFFIC_AGENT_CONTRACT=${{ secrets.SEPOLIA_TRAFFIC_AGENT_CONTRACT }}" \
+            --set-env-vars "USER1_PRIVATE_KEY=${{ secrets.USER_1_PRIVATE_KEY }}" \
+            --set-env-vars "AGENT_A_PRIVATE_KEY=${{ secrets.AGENT_1_PRIVATE_KEY }}" \
+            --set-env-vars "USER2_PRIVATE_KEY=${{ secrets.USER_2_PRIVATE_KEY }}" \
+            --set-env-vars "AGENT_B_PRIVATE_KEY=${{ secrets.AGENT_2_PRIVATE_KEY }}" \
             --min-instances 0 \
             --max-instances 3 \
             --memory 1Gi \
