@@ -58,9 +58,10 @@ jobs:
             --set-env-vars "SEPOLIA_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com" \
             --set-env-vars "SEPOLIA_JPYC_CONTRACT=${{ secrets.SEPOLIA_JPYC_CONTRACT }}" \
             --set-env-vars "SEPOLIA_TRAFFIC_AGENT_CONTRACT=${{ secrets.SEPOLIA_TRAFFIC_AGENT_CONTRACT }}" \
+            --set-env-vars "SEPOLIA_AGENT_IDENTITY_REGISTRY=${{ secrets.SEPOLIA_AGENT_IDENTITY_REGISTRY }}" \
             --set-env-vars "USER1_PRIVATE_KEY=${{ secrets.USER_1_PRIVATE_KEY }}" \
-            --set-env-vars "AGENT_A_PRIVATE_KEY=${{ secrets.AGENT_1_PRIVATE_KEY }}" \
             --set-env-vars "USER2_PRIVATE_KEY=${{ secrets.USER_2_PRIVATE_KEY }}" \
+            --set-env-vars "AGENT_A_PRIVATE_KEY=${{ secrets.AGENT_1_PRIVATE_KEY }}" \
             --set-env-vars "AGENT_B_PRIVATE_KEY=${{ secrets.AGENT_2_PRIVATE_KEY }}" \
             --min-instances 0 \
             --max-instances 3 \
