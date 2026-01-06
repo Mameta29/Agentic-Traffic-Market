@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createPublicClient, createWalletClient, http, type Address } from 'viem';
-import { avalancheFuji } from 'viem/chains';
+import { avalancheFuji, sepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 import { env } from '../config/env';
 
@@ -12,6 +12,15 @@ import { env } from '../config/env';
 export const publicClient = createPublicClient({
   chain: avalancheFuji,
   transport: http(env.avalancheRpcUrl),
+});
+
+/**
+ * Ethereum Sepolia Testnet用のパブリッククライアント
+ * EIP-7702実装とJPYC残高確認に使用
+ */
+export const publicClientSepolia = createPublicClient({
+  chain: sepolia,
+  transport: http(env.sepoliaRpcUrl),
 });
 
 /**
@@ -68,6 +77,3 @@ export function getWalletByAddress(address: Address) {
 
   throw new Error(`未知のアドレス: ${address}`);
 }
-
-
-

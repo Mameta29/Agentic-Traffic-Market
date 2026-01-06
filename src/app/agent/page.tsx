@@ -28,25 +28,40 @@ export default function AgentDashboard() {
   const [negotiationResult, setNegotiationResult] = useState<any>(null);
   const [selectedNetwork, setSelectedNetwork] = useState<'fuji' | 'sepolia'>('fuji');
   
-  // JPYC残高をリアルタイム更新
-  const [agentBalances, setAgentBalances] = useState<Record<string, string>>({});
+  // JPYC残高をリアルタイム更新（両ネットワーク）
+  const [agentBalances, setAgentBalances] = useState<Record<string, { sepolia: string; fuji: string }>>({});
   
   useEffect(() => {
     const interval = setInterval(async () => {
       if (simulation.agents.length >= 2) {
         try {
-          const balanceA = await fetch(`/api/agent/balance?address=${simulation.agents[0].address}`).then(r => r.json());
-          const balanceB = await fetch(`/api/agent/balance?address=${simulation.agents[1].address}`).then(r => r.json());
-          
-          setAgentBalances({
-            [simulation.agents[0].address]: balanceA.balance,
-            [simulation.agents[1].address]: balanceB.balance,
+          // 両方のネットワークから残高を取得
+          const promises = simulation.agents.map(async (agent) => {
+            const [sepoliaRes, fujiRes] = await Promise.all([
+              fetch(`/api/agent/balance?address=${agent.address}&network=sepolia`).then(r => r.json()).catch(() => ({ balance: '0' })),
+              fetch(`/api/agent/balance?address=${agent.address}&network=fuji`).then(r => r.json()).catch(() => ({ balance: '0' }))
+            ]);
+            
+            return {
+              address: agent.address,
+              sepolia: sepoliaRes.balance,
+              fuji: fujiRes.balance
+            };
           });
           
-          console.log('[Dashboard] Balance updated:', { 
-            agentA: balanceA.balance,
-            agentB: balanceB.balance 
-          });
+          const results = await Promise.all(promises);
+          const balances: Record<string, { sepolia: string; fuji: string }> = {};
+          
+          for (const result of results) {
+            balances[result.address] = {
+              sepolia: result.sepolia,
+              fuji: result.fuji
+            };
+          }
+          
+          setAgentBalances(balances);
+          
+          console.log('[Dashboard] Balances updated:', balances);
         } catch (error) {
           console.error('[Dashboard] Balance update error:', error);
         }
@@ -75,6 +90,17 @@ export default function AgentDashboard() {
 
   // ネゴシエーションをストリーミングで可視化（段階的表示）
   const streamNegotiation = (locationId: string, network: 'fuji' | 'sepolia' = 'fuji') => {
+    // ネゴシエーション開始時に状態を初期化（進行中フラグ付き）
+    setNegotiationResult({
+      isNegotiating: true,
+      transcript: [],
+    });
+    
+    // ターミナルにも即座に開始メッセージを表示
+    const startMsg = { role: 'system', content: '[System] Negotiation starting...' };
+    setAgent1Messages((prev) => [...prev, startMsg]);
+    setAgent2Messages((prev) => [...prev, startMsg]);
+    
     const eventSource = new EventSource(
       `/api/negotiation/stream?agent1Id=1&agent2Id=2&locationId=${locationId}&network=${network}`
     );
@@ -82,9 +108,10 @@ export default function AgentDashboard() {
     eventSource.addEventListener('progress', (event) => {
       const data = JSON.parse(event.data);
       
-      // Negotiation Resultにも段階的に追加
+      // Negotiation Resultにも段階的に追加（isNegotiatingフラグを維持）
       setNegotiationResult((prev: any) => ({
         ...prev,
+        isNegotiating: true,
         transcript: [...(prev?.transcript || []), data.message],
       }));
       
@@ -125,14 +152,16 @@ export default function AgentDashboard() {
     eventSource.addEventListener('result', (event) => {
       const data = JSON.parse(event.data);
       
-      // ネゴシエーション結果を設定
-      setNegotiationResult({
+      // ネゴシエーション結果を設定（進行中フラグを解除し、最終結果を反映）
+      setNegotiationResult((prev: any) => ({
+        ...prev,
+        isNegotiating: false,
         success: data.success,
         buyer: { agentId: 1 },
         seller: { agentId: 2 },
         agreedPrice: data.finalPrice,
-        transcript: data.transcript,
-      });
+        transcript: data.transcript, // 最終的な完全なtranscriptを使用
+      }));
 
       if (data.success) {
         setDemoStep('completed');
@@ -276,11 +305,13 @@ export default function AgentDashboard() {
               <>
                 <AgentCard 
                   agent={simulation.agents[0]} 
-                  liveBalance={agentBalances[simulation.agents[0].address]}
+                  liveBalance={agentBalances[simulation.agents[0].address]?.sepolia || simulation.agents[0].balance}
+                  liveBalanceFuji={agentBalances[simulation.agents[0].address]?.fuji || simulation.agents[0].balanceFuji}
                 />
                 <AgentCard 
                   agent={simulation.agents[1]}
-                  liveBalance={agentBalances[simulation.agents[1].address]}
+                  liveBalance={agentBalances[simulation.agents[1].address]?.sepolia || simulation.agents[1].balance}
+                  liveBalanceFuji={agentBalances[simulation.agents[1].address]?.fuji || simulation.agents[1].balanceFuji}
                 />
               </>
             )}
@@ -294,14 +325,14 @@ export default function AgentDashboard() {
               <div className="min-h-[400px]">
                 <ThinkingTerminal
                   messages={agent1Messages}
-                  agentName="Agent A"
+                  agentName="Agent 1"
                   agentRole="buyer"
                 />
               </div>
               <div className="min-h-[400px]">
                 <ThinkingTerminal
                   messages={agent2Messages}
-                  agentName="Agent B"
+                  agentName="Agent 2"
                   agentRole="seller"
                 />
               </div>

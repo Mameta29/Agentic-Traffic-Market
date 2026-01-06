@@ -8,17 +8,18 @@ import type { Agent } from '@/types/agent';
 interface AgentCardProps {
   agent: Agent;
   onStartNegotiation?: () => void;
-  liveBalance?: string; // リアルタイム残高
+  liveBalance?: string; // リアルタイム残高 (Sepolia)
+  liveBalanceFuji?: string; // リアルタイム残高 (Fuji)
 }
 
 /**
  * エージェント情報表示カード
  */
-export function AgentCard({ agent, onStartNegotiation, liveBalance }: AgentCardProps) {
-  // Agent IDからカラーを決定（役割ではなく）
-  const agentLetter = agent.id === 'agent-1' || agent.id === 'agent-a' ? 'A' : 'B';
-  const roleColor = agentLetter === 'A' ? 'green' : 'pink';
-  const textColor = agentLetter === 'A' ? 'text-green-400' : 'text-pink-400';
+export function AgentCard({ agent, onStartNegotiation, liveBalance, liveBalanceFuji }: AgentCardProps) {
+  // Agent IDからカラーと番号を決定
+  const agentNumber = agent.id === 'agent-1' || agent.id === 'agent-a' ? '1' : '2';
+  const roleColor = agentNumber === '1' ? 'green' : 'pink';
+  const textColor = agentNumber === '1' ? 'text-green-400' : 'text-pink-400';
 
   const stateColors: Record<typeof agent.state, string> = {
     idle: 'text-gray-400',
@@ -41,7 +42,7 @@ export function AgentCard({ agent, onStartNegotiation, liveBalance }: AgentCardP
           <Bot className={`w-6 h-6 ${textColor}`} />
           <div>
             <h3 className={`text-lg font-bold ${textColor} uppercase`}>
-              Agent {agentLetter}
+              Agent {agentNumber}
             </h3>
             <p className="text-xs text-gray-500">
               Role: Flexible (AI decides)
@@ -68,15 +69,29 @@ export function AgentCard({ agent, onStartNegotiation, liveBalance }: AgentCardP
           </div>
         </div>
 
-        {/* Balance（リアルタイム更新） */}
+        {/* Balance（リアルタイム更新 - 両ネットワーク） */}
         {(liveBalance || agent.balance) && (
-          <div className="flex items-center gap-2">
-            <Coins className="w-4 h-4 text-yellow-400" />
-            <div className="flex-1">
-              <p className="text-xs text-gray-500">JPYC Balance</p>
-              <p className="text-sm text-gray-300 font-mono">
-                {Number.parseFloat(liveBalance || agent.balance || '0').toFixed(2)} JPYC
-              </p>
+          <div className="space-y-2">
+            {/* Sepolia Balance */}
+            <div className="flex items-center gap-2">
+              <Coins className="w-4 h-4 text-yellow-400" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500">JPYC Balance (Sepolia)</p>
+                <p className="text-sm text-gray-300 font-mono">
+                  {Number.parseFloat(liveBalance || agent.balance || '0').toFixed(2)} JPYC
+                </p>
+              </div>
+            </div>
+            
+            {/* Fuji Balance */}
+            <div className="flex items-center gap-2">
+              <Coins className="w-4 h-4 text-orange-400" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500">JPYC Balance (Fuji)</p>
+                <p className="text-sm text-gray-300 font-mono">
+                  {Number.parseFloat(liveBalanceFuji || agent.balanceFuji || '0').toFixed(2)} JPYC
+                </p>
+              </div>
             </div>
           </div>
         )}

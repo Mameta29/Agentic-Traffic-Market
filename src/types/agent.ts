@@ -19,7 +19,8 @@ export interface Agent {
     lat: number;
     lng: number;
   };
-  balance?: string; // JPYC balance (as string to handle BigInt)
+  balance?: string; // JPYC balance Sepolia (as string to handle BigInt)
+  balanceFuji?: string; // JPYC balance Avalanche Fuji
 }
 
 export interface NegotiationMessage {

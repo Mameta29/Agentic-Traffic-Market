@@ -107,20 +107,35 @@ export async function buildAgentContext(
 
 /**
  * デモ用のコンテキストを生成（NFTなしでも動作）
+ * 注: 実際のJPYC残高は buildAgentContext で取得される
  */
-export function createDemoContext(agentId: 1 | 2): AgentContext {
+export async function createDemoContext(agentId: 1 | 2): Promise<AgentContext> {
+  const wallet = agentId === 1
+    ? '0xE2F2E032B02584e81437bA8Df18F03d6771F9d23' // User 1 EOA
+    : '0xF2431b618B5b02923922c525885DBfFcdb9DE853'; // User 2 EOA
+
+  // 実際のJPYC残高を取得（Sepolia）
+  let balance = 0;
+  try {
+    const balanceStr = await getJpycBalance(wallet as Address);
+    balance = Number.parseFloat(balanceStr);
+    console.log(`[Demo Context] Agent ${agentId} balance: ${balance} JPYC`);
+  } catch (error) {
+    console.warn(`[Demo Context] Failed to get balance for Agent ${agentId}, using 0`);
+  }
+
   if (agentId === 1) {
     // Agent A: 急いでいる配送ドローン
     return {
       agentId: 1,
-      wallet: '0xE2F2E032B02584e81437bA8Df18F03d6771F9d23', // User 1 EOA
+      wallet,
       currentMission: {
         type: 'delivery',
         deadline: Date.now() + 1800000, // 30分後
         priority: 'high',
         destinationImportance: 9,
       },
-      balance: 5000,
+      balance, // 実際の残高を使用
       alternativeRoutes: [],
       negotiationHistory: [],
       strategy: {
@@ -135,14 +150,14 @@ export function createDemoContext(agentId: 1 | 2): AgentContext {
     // Agent B: 観光客
     return {
       agentId: 2,
-      wallet: '0xF2431b618B5b02923922c525885DBfFcdb9DE853', // User 2 EOA
+      wallet,
       currentMission: {
         type: 'patrol',
         deadline: null,
         priority: 'low',
         destinationImportance: 3,
       },
-      balance: 3000,
+      balance, // 実際の残高を使用
       alternativeRoutes: ['ROUTE_ALT_1', 'ROUTE_ALT_2'],
       negotiationHistory: [],
       strategy: {

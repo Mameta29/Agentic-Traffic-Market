@@ -26,9 +26,9 @@ export async function GET(request: Request) {
       };
 
       try {
-        // コンテキスト作成
-        const context1 = createDemoContext(agent1Id as 1 | 2);
-        const context2 = createDemoContext(agent2Id as 1 | 2);
+        // コンテキスト作成（実際のJPYC残高を取得）
+        const context1 = await createDemoContext(agent1Id as 1 | 2);
+        const context2 = await createDemoContext(agent2Id as 1 | 2);
 
         sendEvent('start', {
           message: 'Negotiation started',

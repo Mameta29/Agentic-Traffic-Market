@@ -40,68 +40,91 @@ export async function negotiateAItoAI(
   const conversation: ConversationTurn[] = [];
   const transcript: string[] = [];
   const maxRounds = 5; // 最大5往復
+  
+  // ===== マーケット相場の設定 =====
+  // 通行権の基準価格（マイクロペイメント形式）
+  // 時間帯、混雑度、優先度などを考慮した動的価格
+  const timeOfDay = new Date().getHours();
+  const congestionFactor = 1.0; // 混雑度（1.0 = 通常、1.5 = 混雑）
+  const basePriceRange = { min: 180, max: 280 }; // 基準価格帯
+  
+  // 相場価格を計算（マイクロペイメント形式で生成）
+  const marketPrice = Number.parseFloat(
+    (basePriceRange.min + 
+     Math.random() * (basePriceRange.max - basePriceRange.min) * 
+     congestionFactor
+    ).toFixed(2)
+  );
+  
+  console.log(`[AI-to-AI] Market price for ${locationId}: ${marketPrice} JPYC`);
+  transcript.push(`[System] Market price: ${marketPrice} JPYC`);
 
   try {
-    // ===== Round 1: Agent A が初回オファー =====
-    transcript.push('[System] Agent A making initial offer...');
+    // ===== Round 1: Agent 1 が初回オファー =====
+    // すぐに表示開始（AI応答を待たない）
+    transcript.push('[System] Agent 1 thinking about initial offer...');
+    transcript.push(`[Agent ${contextA.agentId}] [THINKING]`);
     
     const initialOfferPrompt = `You are Agent ${contextA.agentId}, a ${contextA.currentMission.type} vehicle in a traffic negotiation.
+
+MARKET CONTEXT:
+- Current market price for right-of-way at ${locationId}: ${marketPrice} JPYC
+- This is the fair market value based on time, congestion, and demand
+- You should use this as your anchor point for negotiation
 
 Your situation:
 - Mission: ${contextA.currentMission.type}
 - Priority: ${contextA.currentMission.priority}
 - Deadline: ${contextA.currentMission.deadline ? `${Math.floor((contextA.currentMission.deadline - Date.now()) / 60000)} minutes remaining` : 'No deadline'}
 - Current balance: ${contextA.balance} JPYC
-- Maximum you want to pay: ${contextA.strategy.maxWillingToPay} JPYC
+- Maximum you're willing to pay: ${contextA.strategy.maxWillingToPay} JPYC
 
-IMPORTANT CONTRACT LIMITATION:
-The smart contract has a maximum bid limit of 500 JPYC per transaction.
-Even if you're willing to pay ${contextA.strategy.maxWillingToPay}, you CANNOT offer more than 500.
+NEGOTIATION STRATEGY (as Buyer):
+As the buyer, you want to pay LESS than market price if possible:
+- Market price: ${marketPrice} JPYC
+- Suggested opening offer: ${(marketPrice * 0.70).toFixed(2)} - ${(marketPrice * 0.85).toFixed(2)} JPYC (70-85% of market)
+- This gives room for negotiation while staying reasonable
 
-You've collided with another vehicle at intersection ${locationId}.
-The other vehicle has ${contextB.currentMission.priority} priority and is ${contextB.currentMission.type === 'leisure' ? 'just touring (not urgent)' : 'also busy'}.
+IMPORTANT:
+1. Start BELOW market price (around 75-80% of ${marketPrice})
+2. Use PRECISE micropayment amounts (e.g., ${(marketPrice * 0.75).toFixed(2)}, ${(marketPrice * 0.80).toFixed(2)})
+3. Your offer must be a decimal number with 2 decimal places
+4. Contract maximum: 500 JPYC (but market price is much lower)
 
-Task: Make your FIRST OFFER to buy the right-of-way.
+Example opening offers based on market price ${marketPrice}:
+"${(marketPrice * 0.73).toFixed(2)}"
+"${(marketPrice * 0.78).toFixed(2)}"
+"${(marketPrice * 0.82).toFixed(2)}"
 
-Strategy tips:
-- Contract max: 500 JPYC (hard limit)
-- Start at 70-80% of contract max
-- Suggested range: 350-420 JPYC
-
-CRITICAL: Your response must be a number between 300 and 500.
-
-Example responses:
-"380"
-"420"
-"450"
-
-Your initial offer (number only):`;
+Your initial offer (number with 2 decimal places, around 75-80% of market price):`;
 
     const initialOffer = await callAI(initialOfferPrompt);
-    console.log('[AI-to-AI] Agent A initial offer response:', initialOffer);
+    console.log('[AI-to-AI] Agent 1 initial offer response:', initialOffer);
     
     let offerAmount = extractNumber(initialOffer);
     
+    // フォールバック: AIが適切な値を返さなかった場合
     if (!offerAmount || offerAmount === 0) {
-      // フォールバック: 日次制限を考慮
-      offerAmount = 150; // 安全な値
+      // 相場の75-80%を初回オファーとする
+      offerAmount = Number.parseFloat((marketPrice * (0.75 + Math.random() * 0.05)).toFixed(2));
+      console.log('[AI-to-AI] Using fallback offer based on market price:', offerAmount);
     }
     
-    // 日次制限対応: 190以上の場合は調整
-    if (offerAmount > 190) {
-      offerAmount = 150 + Math.random() * 30; // 150-180
-      console.log('[AI-to-AI] Adjusted for daily limit:', offerAmount);
+    // 相場価格を基準にした調整（極端な値を防ぐ）
+    if (offerAmount > marketPrice * 1.5) {
+      offerAmount = Number.parseFloat((marketPrice * (1.0 + Math.random() * 0.2)).toFixed(2));
+      console.log('[AI-to-AI] Adjusted to reasonable range near market price:', offerAmount);
     }
     
-    // AIが整数を返した場合のみ、小数点を追加
-    if (Number.isInteger(offerAmount) && offerAmount > 0) {
-      const cents = Math.floor(Math.random() * 100);
-      offerAmount = Number.parseFloat(`${offerAmount}.${cents < 10 ? '0' + cents : cents}`);
+    if (offerAmount < marketPrice * 0.5) {
+      offerAmount = Number.parseFloat((marketPrice * (0.7 + Math.random() * 0.1)).toFixed(2));
+      console.log('[AI-to-AI] Adjusted to reasonable minimum near market price:', offerAmount);
     }
     
-    // 小数点を2桁に丸める
+    // 既に小数点形式の場合は2桁に丸める
     offerAmount = Math.round(offerAmount * 100) / 100;
-    console.log('[AI-to-AI] Final micropayment amount:', offerAmount);
+    
+    console.log('[AI-to-AI] Final micropayment offer:', offerAmount);
     
     conversation.push({
       speaker: contextA.agentId,
@@ -111,46 +134,64 @@ Your initial offer (number only):`;
     });
     transcript.push(`[Agent ${contextA.agentId}] Initial offer: ${offerAmount} JPYC`);
 
-    // ===== Round 2: Agent B が評価・応答 =====
+    // ===== Round 2: Agent 2 が評価・応答 =====
     let currentOffer = offerAmount;
     let negotiationRound = 1;
 
     while (negotiationRound <= maxRounds) {
       transcript.push(`[System] Negotiation round ${negotiationRound}...`);
+      transcript.push(`[Agent ${contextB.agentId}] [THINKING]`);
 
-      // Agent Bがオファーを評価
+      // Agent 2がオファーを評価
       const evaluationPrompt = `You are Agent ${contextB.agentId}, a ${contextB.currentMission.type} tourist vehicle.
 
+MARKET CONTEXT:
+- Current market price for right-of-way: ${marketPrice} JPYC
+- This is the fair market value everyone knows
+- Agent ${contextA.agentId} has offered ${currentOffer} JPYC
+
+MARKET ANALYSIS:
+- Their offer is ${((currentOffer / marketPrice) * 100).toFixed(1)}% of market price
+- ${currentOffer < marketPrice * 0.85 ? 'Their offer is LOW - they are trying to get a bargain' : 
+   currentOffer < marketPrice ? 'Their offer is slightly below market - reasonable but you can ask for more' :
+   currentOffer < marketPrice * 1.15 ? 'Their offer is near or above market - good deal!' :
+   'Their offer is HIGH - excellent deal!'}
+
 Your situation:
-- Mission: Leisure touring (NO urgency)
+- Mission: Leisure touring (NO urgency, you have time)
 - Priority: LOW
 - Alternative routes: ${contextB.alternativeRoutes.length} available
-- Minimum acceptable: ${contextB.strategy.minAcceptableOffer} JPYC (but flexible)
+- Minimum acceptable: ${contextB.strategy.minAcceptableOffer} JPYC (but market price is ${marketPrice})
+- Current balance: ${contextB.balance} JPYC
 
-Agent ${contextA.agentId} has offered ${currentOffer} JPYC to pass.
+NEGOTIATION STRATEGY (as Seller):
+You want to get ABOVE market price if possible:
+- Market price: ${marketPrice} JPYC
+- Ideal price: ${(marketPrice * 1.1).toFixed(2)} - ${(marketPrice * 1.2).toFixed(2)} JPYC (110-120% of market)
+- Minimum: ${(marketPrice * 0.95).toFixed(2)} JPYC (95% of market is acceptable)
 
-IMPORTANT: You are a budget tourist who needs money. Any reasonable offer is good!
+Decision Rules:
+Round ${negotiationRound}/${maxRounds}:
+1. If offer >= ${(marketPrice * 1.05).toFixed(2)} (105% of market): ACCEPT (great deal!)
+2. If offer >= ${(marketPrice * 0.95).toFixed(2)} (95% of market) AND round >= 2: ACCEPT (fair enough)
+3. If offer < ${(marketPrice * 0.95).toFixed(2)} (below 95% of market): COUNTER with ${(marketPrice * (1.05 + Math.random() * 0.10)).toFixed(2)}
+4. Use precise micropayment amounts in your counter-offer
 
-Analysis:
-- Offer: ${currentOffer} JPYC
-- Your minimum: ${contextB.strategy.minAcceptableOffer} JPYC
+Current offer ${currentOffer} vs market ${marketPrice}:
+${currentOffer >= marketPrice * 1.05 ? '✅ GREAT DEAL - Accept!' :
+  currentOffer >= marketPrice * 0.95 && negotiationRound >= 2 ? '✅ FAIR PRICE - Accept!' :
+  currentOffer >= marketPrice * 0.85 ? '⚠️ BELOW MARKET - Counter with higher price' :
+  '❌ TOO LOW - Counter with market price or higher'}
 
-Decision Rules (FOLLOW EXACTLY):
-1. If offer >= ${contextB.strategy.minAcceptableOffer}: ACCEPT immediately
-2. If offer >= 100 JPYC: ACCEPT (you need money!)
-3. If 50-99 JPYC: COUNTER with slightly higher amount
-4. If < 50 JPYC: REJECT
-
-Current offer is ${currentOffer} JPYC.
-This is >= 100, so you should ACCEPT.
-
-Respond EXACTLY:
-"ACCEPT" or "COUNTER:XXX" or "REJECT"
+Respond EXACTLY in one of these formats:
+"ACCEPT" (if offer is >= 95% of market or excellent deal)
+"COUNTER:XXX.XX" (where XXX.XX is your counter near or above market price, e.g., "COUNTER:${(marketPrice * 1.08).toFixed(2)}")
+"REJECT" (only if offer is insultingly low AND no room for negotiation)
 
 Your response:`;
 
       const response = await callAI(evaluationPrompt);
-      console.log('[AI-to-AI] Agent B response:', response);
+      console.log('[AI-to-AI] Agent 2 response:', response);
       
       const responseUpper = response.toUpperCase();
       
@@ -175,52 +216,62 @@ Your response:`;
         };
       } else if (responseUpper.includes('COUNTER')) {
         // カウンターオファー
-        const counterAmount = extractNumber(response);
+        let counterAmount = extractNumber(response);
         
         // カウンター額が抽出できない、または不正な場合
         if (!counterAmount || counterAmount < 100 || counterAmount > 1000) {
-          console.warn('[AI-to-AI] Invalid counter amount, using calculated value');
-          // フォールバック: 最低価格の少し上
-          const fallbackCounter = Math.floor(
-            contextB.strategy.minAcceptableOffer + 
-            (contextB.strategy.minAcceptableOffer - currentOffer) * 0.5
-          );
-          transcript.push(`[Agent ${contextB.agentId}] Counter-offer: ${fallbackCounter} JPYC`);
-          
-          conversation.push({
-            speaker: contextB.agentId,
-            message: `Counter-offer: ${fallbackCounter} JPYC`,
-            offerAmount: fallbackCounter,
-            action: 'counter_offer',
-          });
-          
-          currentOffer = fallbackCounter;
-          negotiationRound++;
-          continue;
+          console.warn('[AI-to-AI] Invalid counter amount, using market-based value');
+          // フォールバック: 相場の105-115%
+          counterAmount = Number.parseFloat((marketPrice * (1.05 + Math.random() * 0.10)).toFixed(2));
+        } else {
+          // 小数点2桁に丸める
+          counterAmount = Math.round(counterAmount * 100) / 100;
         }
         
-        conversation.push({
-          speaker: contextB.agentId,
-          message: `Counter-offer: ${counterAmount} JPYC`,
-          offerAmount: counterAmount,
-          action: 'counter_offer',
-        });
         transcript.push(`[Agent ${contextB.agentId}] Counter-offer: ${counterAmount} JPYC`);
 
-        // Agent Aがカウンターオファーを評価
-        const buyerResponsePrompt = `You are Agent ${contextA.agentId}.
+        // Agent 1がカウンターオファーを評価
+        transcript.push(`[Agent ${contextA.agentId}] [THINKING]`);
+        
+        const buyerResponsePrompt = `You are Agent ${contextA.agentId} (Buyer) continuing negotiation.
 
-You offered ${currentOffer} JPYC.
-Agent ${contextB.agentId} counter-offered ${counterAmount} JPYC.
+MARKET CONTEXT:
+- Market price: ${marketPrice} JPYC
+- Your initial offer: ${offerAmount} JPYC (${((offerAmount / marketPrice) * 100).toFixed(1)}% of market)
+- Your last offer: ${currentOffer} JPYC
+- Their counter: ${counterAmount} JPYC (${((counterAmount / marketPrice) * 100).toFixed(1)}% of market)
 
-Your max budget: ${contextA.strategy.maxWillingToPay} JPYC.
+MARKET ANALYSIS:
+- Price difference: ${(counterAmount - currentOffer).toFixed(2)} JPYC
+- ${counterAmount <= marketPrice ? 'Their counter is AT OR BELOW market - great!' :
+   counterAmount <= marketPrice * 1.1 ? 'Their counter is slightly above market - reasonable' :
+   counterAmount <= marketPrice * 1.2 ? 'Their counter is above market - consider negotiating' :
+   'Their counter is HIGH - definitely negotiate down'}
 
-Options:
-1. ACCEPT if reasonable
-2. COUNTER:<amount> if you want to negotiate further
-3. REJECT if too high
+Your situation:
+- Current balance: ${contextA.balance} JPYC
+- Maximum budget: ${contextA.strategy.maxWillingToPay} JPYC
+- Contract limit: 500 JPYC
 
-Respond:`;
+NEGOTIATION STRATEGY:
+Round ${negotiationRound}/${maxRounds}:
+1. If counter <= ${(marketPrice * 1.05).toFixed(2)} (105% of market): ACCEPT (at or near market!)
+2. If counter <= ${(marketPrice * 1.15).toFixed(2)} (115% of market): Consider ACCEPT or small COUNTER
+3. If counter > ${(marketPrice * 1.15).toFixed(2)}: COUNTER with middle ground (e.g., ${((currentOffer + counterAmount) / 2).toFixed(2)})
+4. If round >= ${maxRounds - 1}: ACCEPT if reasonable, or final COUNTER
+
+Current counter ${counterAmount} vs market ${marketPrice}:
+${counterAmount <= marketPrice * 1.05 ? '✅ EXCELLENT - At market price, accept!' :
+  counterAmount <= marketPrice * 1.15 ? '✅ GOOD - Slightly above market but acceptable' :
+  counterAmount <= marketPrice * 1.3 ? '⚠️ HIGH - Counter with compromise' :
+  '❌ TOO HIGH - Counter with firm offer near market'}
+
+Respond EXACTLY in one of these formats:
+"ACCEPT" (agree to their price)
+"COUNTER:XXX.XX" (where XXX.XX is your counter with 2 decimals, near market price)
+"REJECT" (walk away from deal)
+
+Your response:`;
 
         const buyerResponse = await callAI(buyerResponsePrompt);
 
@@ -241,8 +292,21 @@ Respond:`;
             conversation,
             transcript,
           };
-        } else if (buyerResponse.includes('COUNTER:')) {
-          currentOffer = extractNumber(buyerResponse.replace('COUNTER:', ''));
+        } else if (buyerResponse.includes('COUNTER')) {
+          // Agent 1からの新しいカウンターオファー
+          let newOffer = extractNumber(buyerResponse);
+          
+          if (!newOffer || newOffer < 100 || newOffer > 1000) {
+            // フォールバック: 相場に近い中間値
+            newOffer = Number.parseFloat(((currentOffer + counterAmount) / 2).toFixed(2));
+            console.warn('[AI-to-AI] Invalid counter from A, using middle ground:', newOffer);
+          } else {
+            // 小数点2桁に丸める
+            newOffer = Math.round(newOffer * 100) / 100;
+          }
+          
+          currentOffer = newOffer;
+          
           conversation.push({
             speaker: contextA.agentId,
             message: `Counter-offer: ${currentOffer} JPYC`,
@@ -250,6 +314,7 @@ Respond:`;
             action: 'counter_offer',
           });
           transcript.push(`[Agent ${contextA.agentId}] Counter-offer: ${currentOffer} JPYC`);
+          negotiationRound++;
         } else {
           // Reject
           transcript.push(`[Agent ${contextA.agentId}] ❌ Rejected`);
@@ -260,8 +325,6 @@ Respond:`;
         transcript.push(`[Agent ${contextB.agentId}] ❌ Rejected offer`);
         break;
       }
-
-      negotiationRound++;
     }
 
     transcript.push('[System] ❌ No agreement reached after multiple rounds');
@@ -435,7 +498,7 @@ async function executePayment(
 
   // 決済成功/失敗に関わらず、デモを進める
   console.log(`[Payment] Resolving collision, seller ${sellerAgentId} moves aside`);
-  resolveCollision(sellerAgentId);
+  await resolveCollision(sellerAgentId);
   transcript.push('[System] Collision resolved. Traffic flowing.');
 }
 

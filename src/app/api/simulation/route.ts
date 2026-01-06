@@ -14,7 +14,7 @@ import { startNegotiation } from '@/server/services/negotiation-orchestrator';
  */
 export async function GET() {
   try {
-    const state = getSimulationState();
+    const state = await getSimulationState();
     return Response.json(state);
   } catch (error) {
     return Response.json(
