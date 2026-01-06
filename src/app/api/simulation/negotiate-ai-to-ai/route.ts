@@ -32,8 +32,8 @@ export async function POST(request: Request) {
       context1 = await buildAgentContext(agent1Id, agent1Id);
       context2 = await buildAgentContext(agent2Id, agent2Id);
     } else {
-      context1 = createDemoContext(1);
-      context2 = createDemoContext(2);
+      context1 = await createDemoContext(1);
+      context2 = await createDemoContext(2);
     }
 
     // 実際のネゴシエーション実行

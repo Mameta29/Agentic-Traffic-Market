@@ -40,8 +40,8 @@ export async function POST(request: Request) {
     } else {
       // デモコンテキスト使用
       console.log('[API] Using demo contexts...');
-      context1 = createDemoContext(1);
-      context2 = createDemoContext(2);
+      context1 = await createDemoContext(1);
+      context2 = await createDemoContext(2);
     }
 
     // 動的ネゴシエーション実行

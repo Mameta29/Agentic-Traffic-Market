@@ -19,8 +19,8 @@ export async function GET(request: Request) {
     console.log('[Stream Dynamic] Starting stream for agent', agentId);
 
     // コンテキスト取得
-    const myContext = createDemoContext(agentId as 1 | 2);
-    const otherContext = createDemoContext(otherAgentId as 1 | 2);
+    const myContext = await createDemoContext(agentId as 1 | 2);
+    const otherContext = await createDemoContext(otherAgentId as 1 | 2);
 
     // プロンプト生成
     const prompt = generateRoleDeterminationPrompt(myContext, {
