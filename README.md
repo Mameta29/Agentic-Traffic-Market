@@ -1,154 +1,111 @@
 # Agentic Traffic Market (ATM)
 
-AIエージェントがリアルタイムで物理的な「通行権」を交渉・取引する次世代P2Pマーケットプレイス。
+AIエージェントがリアルタイムで物理的な「通行権」を交渉・取引するP2Pマーケットプレイス。
 
-## 🎯 プロジェクト概要
+## プロジェクト概要
 
-このプロジェクトは、以下の技術を統合した先進的な実装です:
+このプロジェクトは、以下の技術を使用しています:
 - **AIエージェント**: Google Gemini 3 Flash Preview による自律的な意思決定
-- **ブロックチェーン**: Avalanche Fuji Testnet上でマイクロペイメント（小数点対応）
+- **ブロックチェーン**: Avalanche Fuji Testnet上でマイクロペイメント
 - **リアルタイム通信**: Socket.ioによる位置情報同期
-- **Agent Standard**: Model Context Protocol (MCP) SDKによる標準化
-- **本番稼働**: GCP Cloud Runで公開中
+- **AI SDK**: Vercel AI SDK (`ai` パッケージ) によるストリーミング統合
 
-## 🌐 デモURL
+## デモURL
 
 **Live Demo**: https://agentic-traffic-market-831529922100.us-central1.run.app
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: Next.js 16.1 (App Router), React 19
-- **AI Brain**: Google Gemini 3 Flash Preview via `@ai-sdk/google`
-- **Agent Standard**: Official MCP SDK (`@modelcontextprotocol/sdk`)
+- **AI Provider**: Google Gemini 3 Flash Preview (`@ai-sdk/google`)
+- **AI Framework**: Vercel AI SDK (`ai`) - `streamText`によるストリーミング & ツール統合
 - **Blockchain**: Viem v2.x (Avalanche Fuji Testnet, Chain ID: 43113)
 - **Smart Contracts**: Solidity 0.8.28, Foundry
 - **Real-time**: Socket.io, Server-Sent Events
 - **Styling**: Tailwind CSS (Cyberpunk Theme)
 - **Deploy**: GCP Cloud Run, Docker
-- **Tests**: 38/38 passing
 
-## 📁 プロジェクト構造
+## プロジェクト構造
 
 ```
 root/
 ├── src/
 │   ├── app/                    # Next.js 16 App Router (UI)
-│   │   ├── api/                # API Routes
-│   │   │   ├── agent/stream/   # AI Streaming Endpoint
-│   │   │   └── test/           # Health Check
+│   │   ├── api/                # API Routes (10エンドポイント)
+│   │   │   ├── agent/          # エージェントAI関連API
+│   │   │   ├── simulation/     # シミュレーション制御API
+│   │   │   ├── negotiation/    # ネゴシエーションAPI
+│   │   │   └── test/           # ヘルスチェック & デバッグ
 │   │   ├── agent/              # Dashboard Page
 │   │   └── page.tsx            # Landing Page
 │   ├── client/                 # クライアントコンポーネント
-│   │   ├── features/map/       # Mapbox可視化
+│   │   ├── features/agent/     # エージェントカード
+│   │   ├── features/map/       # マップ可視化（Canvas-based）
 │   │   └── features/terminal/  # サイバーパンクログ & チャット
 │   ├── server/                 # サーバーロジック
-│   │   ├── actions/            # Server Actions (AI Stream)
-│   │   ├── lib/                # Viem, Vertex AI, JPYC
+│   │   ├── actions/            # Server Actions (streamAgentThinking)
+│   │   ├── lib/                # Viem, EIP-7702, JPYC, Agent管理
+│   │   ├── services/           # シミュレーション & ネゴシエーション
 │   │   └── config/             # 環境変数管理
-│   ├── mcp-server/             # [CORE] MCP Tool Definitions
+│   ├── mcp-server/             # AIツール定義（MCP風アーキテクチャ）
 │   │   ├── tools/              # 5つの主要ツール
-│   │   └── index.ts            # Tool Registry
+│   │   └── index.ts            # Vercel AI SDK用ツール変換
 │   └── types/                  # 共有型定義
 ├── server.ts                   # カスタムサーバー (Socket.io + Next.js)
 └── package.json
 ```
 
-## 🚀 セットアップ & 起動
-
-**📖 詳細ガイド**: 
-- **ローカル起動**: `QUICKSTART.md` （←ここから始めてください）
-- 完全デプロイ: ローカルドキュメント参照
-
-### クイックスタート（開発モード）
-
-```bash
-# 1. 依存関係のインストール
-pnpm install
-
-# 2. 環境変数設定（最小限）
-cp .env.local.example .env.local
-# .env.local を編集して最低限以下を設定:
-# - GOOGLE_GENERATIVE_AI_API_KEY=your-key
-
-# 3. 開発サーバー起動
-pnpm dev
-```
-
-### 完全デプロイ（ブロックチェーン統合）
-
-```bash
-# 1. スマートコントラクトをデプロイ
-cd contracts
-forge script script/Deploy.s.sol --rpc-url avalanche_fuji --broadcast
-
-# 2. デプロイされたアドレスを.env.localに設定
-# 3. Agent NFT登録（詳細はDEPLOYMENT_GUIDE.md参照）
-# 4. アプリ起動
-pnpm dev
-```
-
-`http://localhost:3000`でアプリケーションが起動します。
-
-## 🧪 動作確認
-
-### ヘルスチェック
-```bash
-curl http://localhost:3000/api/test
-```
-
-レスポンス例:
-```json
-{
-  "status": "ok",
-  "mcpTools": [
-    "get_jpyc_balance",
-    "transfer_jpyc",
-    "sign_traffic_intent",
-    "evaluate_congestion",
-    "negotiate_message"
-  ],
-  "environment": {
-    "hasGoogleApiKey": true,
-    "hasAgentAKey": true,
-    "hasAgentBKey": true,
-    "chainId": 43113
-  }
-}
-```
-
 ### フルデモシナリオの実行
 
-ブラウザで `http://localhost:3000/agent` を開き、**"Start Full Demo"** ボタンをクリック。
+ブラウザで `https://agentic-traffic-market-831529922100.us-central1.run.app/agent` を開き、2種類のデモから選択:
+
+#### デモ1: Start Demo (Fuji) - 高速決済デモ
+**ネットワーク**: Avalanche Fuji Testnet (Chain ID: 43113)  
+**特徴**: 
+- 高速トランザクション（1-2秒で確定）
+- 従来型のEOA間決済（EIP-7702は不使用）
+- シンプルなブロックチェーン統合デモ
 
 **自動実行フロー:**
-1. ⏱️ **0秒**: Agent A (Buyer) が移動開始
-2. ⏱️ **2秒**: Agent A と Agent B が交差点でコリジョン → 両者停止
-3. 🤖 **AI自動起動**: Agent A が混雑評価 + オファー送信
-4. 🤖 **AI自動応答**: Agent B がオファー検討 → 受諾/拒否
-5. 💰 **決済**: 受諾された場合、JPYC支払い実行
-6. ✅ **解決**: Agent B が道を譲り、Agent A が目的地へ
+1. **0秒**: Agent A (Buyer) が移動開始
+2. **2秒**: Agent A と Agent B が交差点でコリジョン
+3. **AI自動起動**: Agent A が混雑評価 + オファー送信
+4. **AI自動応答**: Agent B がオファー検討 → 受諾/拒否
+5. **決済**: 受諾された場合、JPYC支払い実行（従来型トランザクション）
+6. **解決**: Agent B が道を譲り、Agent A が目的地へ
+
+#### デモ2: EIP-7702 Demo (Sepolia)
+**ネットワーク**: Ethereum Sepolia Testnet (Chain ID: 11155111)  
+**特徴**: 
+- **EIP-7702対応** - EOAにスマートコントラクト機能を委譲
+- ユーザー秘密鍵不要（事前署名されたAuthorizationを使用）
+- AIエージェントが直接ユーザーEOAを操作
+- 実際のEthereumメインネット仕様に準拠
+
+**自動実行フロー:**
+1. **0秒**: Agent A (Buyer) が移動開始
+2. **2秒**: Agent A と Agent B が交差点でコリジョン
+3. **AI自動起動**: Agent A が混雑評価 + オファー送信
+4. **AI自動応答**: Agent B がオファー検討 → 受諾/拒否
+5. **決済**: AIエージェントが**EIP-7702**を使用してユーザーEOAから直接支払い
+6. **解決**: Agent B が道を譲り、Agent A が目的地へ
 
 **全プロセスがAIによって自律的に実行されます！**
 
-### AIエージェントのテスト（Buyer役）
-```bash
-curl -X POST http://localhost:3000/api/agent/stream \
-  -H "Content-Type: application/json" \
-  -d '{
-    "role": "buyer",
-    "messages": [
-      {
-        "role": "user",
-        "content": "Check my JPYC balance and evaluate congestion at location LOC_001"
-      }
-    ],
-    "agentAddress": "0x..."
-  }'
-```
+#### 技術的な違い
 
-## 🎮 MCP Tools
+| 項目 | Fuji Demo | Sepolia Demo (EIP-7702) |
+|------|-----------|-------------------------|
+| ネットワーク | Avalanche Fuji | Ethereum Sepolia |
+| トランザクション速度 | 1-2秒 | 15-30秒 |
+| EIP-7702対応 | 非対応 | 対応 |
+| 決済方式 | Agent EOA → 直接送金 | Agent → User EOA（委譲） |
+| ユーザー秘密鍵 | サーバー保持が必要 | 不要（事前Authorization） |
+| 実装 | `eip-7702.ts` | `eip-7702-correct.ts` |
 
-実装済みの5つのMCPツール:
+## AIツール
+
+実装済みの5つのツール（MCPアーキテクチャ）:
 
 | ツール名 | 説明 | 入力 |
 |---------|------|------|
@@ -158,7 +115,12 @@ curl -X POST http://localhost:3000/api/agent/stream \
 | `evaluate_congestion` | 混雑状況評価 | `{ locationId }` |
 | `negotiate_message` | P2Pメッセージ送信 | `{ from, to, message, offerAmount? }` |
 
-## 🎨 UI Components
+**技術詳細**: 
+- ツール定義は `src/mcp-server/tools/` に配置
+- Zodによる入力バリデーション
+- Vercel AI SDKの`streamText`と統合（`getVercelAITools()`で変換）
+
+## UI Components
 
 ### Cyberpunk Theme Components
 
@@ -170,10 +132,10 @@ curl -X POST http://localhost:3000/api/agent/stream \
 ### Custom Hooks
 
 - **useSocket**: Socket.ioクライアント接続管理
-- **useAgentStream**: Vercel AI SDKによるストリーミング統合
+- **useAgentStream**: Vercel AI SDK (`useChat`) によるストリーミング統合
 - **useSimulation**: トラフィックシミュレーション制御
 
-## 🎯 Simulation Architecture
+## Simulation Architecture
 
 ### Traffic Simulation (`src/server/services/traffic-simulation.ts`)
 - エージェント移動シミュレーション
@@ -191,15 +153,22 @@ curl -X POST http://localhost:3000/api/agent/stream \
   6. Resolution: 道を譲る
 
 ### API Routes
-- `/api/simulation`: シミュレーション制御（start/stop/reset/negotiate）
-- `/api/agent/stream`: AIストリーミング
+- `/api/simulation`: シミュレーション制御（start/stop/reset）
+- `/api/simulation/negotiate-ai-to-ai`: AIエージェント間の自動ネゴシエーション
+- `/api/simulation/negotiate-dynamic`: 動的役割決定ネゴシエーション
+- `/api/simulation/negotiate-network`: ネットワーク経由ネゴシエーション
+- `/api/agent/stream`: AIストリーミング（固定役割）
+- `/api/agent/stream-dynamic`: AIストリーミング（動的役割）
+- `/api/agent/balance`: エージェントのJPYC残高取得
+- `/api/negotiation/stream`: ネゴシエーションストリーミング
 - `/api/test`: ヘルスチェック
+- `/api/test-ai`: AI機能テスト
 
-## 📖 開発ガイド
+## アーキテクチャドキュメント
 
-詳細な開発ルールについては、プロジェクトルートの内部ドキュメントを参照してください。
+このプロジェクトのアーキテクチャドキュメントは`.gitignore`により非公開設定となっています（`docs/`ディレクトリ、および`*.md`ファイル（README.md除く）はgit管理外）。
 
-## 🎨 デザインシステム
+## デザインシステム
 
 サイバーパンクテーマカラー:
 - **Primary**: Neon Green (`#00ff41`)
@@ -207,7 +176,7 @@ curl -X POST http://localhost:3000/api/agent/stream \
 - **Accent**: Cyan (`#00f5ff`)
 - **Background**: Slate 950 (`#020617`)
 
-## 🚢 デプロイ
+## デプロイ
 
 ### Google Cloud Run
 ```bash
@@ -222,6 +191,6 @@ gcloud run deploy agentic-traffic-market \
   --allow-unauthenticated
 ```
 
-## 📜 ライセンス
+## ライセンス
 
 MIT License
