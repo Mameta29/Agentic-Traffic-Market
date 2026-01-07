@@ -21,8 +21,8 @@ export async function POST(request: Request) {
     }
 
     console.log('[API] Starting dynamic role negotiation...');
-    console.log(`  Agent 1 ID: ${agent1Id}`);
-    console.log(`  Agent 2 ID: ${agent2Id}`);
+    console.log(`  Agent A ID: ${agent1Id}`);
+    console.log(`  Agent B ID: ${agent2Id}`);
     console.log(`  Location: ${locationId}`);
 
     // コンテキスト構築

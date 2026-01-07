@@ -16,10 +16,10 @@ interface AgentCardProps {
  * エージェント情報表示カード
  */
 export function AgentCard({ agent, onStartNegotiation, liveBalance, liveBalanceFuji }: AgentCardProps) {
-  // Agent IDからカラーと番号を決定
-  const agentNumber = agent.id === 'agent-1' || agent.id === 'agent-a' ? '1' : '2';
-  const roleColor = agentNumber === '1' ? 'green' : 'pink';
-  const textColor = agentNumber === '1' ? 'text-green-400' : 'text-pink-400';
+  // Agent IDからカラーと文字を決定
+  const agentLetter = agent.id === 'agent-1' || agent.id === 'agent-a' ? 'A' : 'B';
+  const roleColor = agentLetter === 'A' ? 'green' : 'pink';
+  const textColor = agentLetter === 'A' ? 'text-green-400' : 'text-pink-400';
 
   const stateColors: Record<typeof agent.state, string> = {
     idle: 'text-gray-400',
@@ -42,7 +42,7 @@ export function AgentCard({ agent, onStartNegotiation, liveBalance, liveBalanceF
           <Bot className={`w-6 h-6 ${textColor}`} />
           <div>
             <h3 className={`text-lg font-bold ${textColor} uppercase`}>
-              Agent {agentNumber}
+              Agent {agentLetter}
             </h3>
             <p className="text-xs text-gray-500">
               Role: Flexible (AI decides)

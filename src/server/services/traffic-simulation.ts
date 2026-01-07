@@ -53,8 +53,8 @@ export async function initializeAgents(): Promise<Agent[]> {
       const balance1Fuji = await getJpycBalanceFuji(agent1Info.wallet as Address);
       const balance2Fuji = await getJpycBalanceFuji(agent2Info.wallet as Address);
 
-      console.log(`[Simulation] Agent 1 balance: ${balance1Sepolia} JPYC (Sepolia), ${balance1Fuji} JPYC (Fuji)`);
-      console.log(`[Simulation] Agent 2 balance: ${balance2Sepolia} JPYC (Sepolia), ${balance2Fuji} JPYC (Fuji)`);
+      console.log(`[Simulation] Agent A balance: ${balance1Sepolia} JPYC (Sepolia), ${balance1Fuji} JPYC (Fuji)`);
+      console.log(`[Simulation] Agent B balance: ${balance2Sepolia} JPYC (Sepolia), ${balance2Fuji} JPYC (Fuji)`);
 
       agents = [
         {
@@ -231,7 +231,7 @@ function triggerCollision(): void {
   // コリジョン地点（中間地点）
   const collisionPoint = { lat: 35.70, lng: 139.725 };
 
-  // Agent 1, 2のIDを正しく使用
+  // Agent A, BのIDを正しく使用
   const agent1 = state.agents.get('agent-1') || state.agents.get('agent-a');
   const agent2 = state.agents.get('agent-2') || state.agents.get('agent-b');
 
@@ -261,7 +261,7 @@ function triggerCollision(): void {
 
 /**
  * ネゴシエーション成立後の解決
- * Agent 2が道を譲る
+ * Agent Bが道を譲る
  */
 export async function resolveCollision(agentId: string): Promise<void> {
   console.log('[Simulation] resolveCollision called with:', agentId);

@@ -17,6 +17,11 @@ import type { Address } from 'viem';
  * 人間のネゴシエーションをシミュレート
  */
 
+// agentIdを文字に変換するヘルパー関数
+function agentIdToLetter(agentId: number): string {
+  return agentId === 1 ? 'A' : 'B';
+}
+
 interface ConversationTurn {
   speaker: number; // agentId
   message: string;
@@ -60,12 +65,15 @@ export async function negotiateAItoAI(
   transcript.push(`[System] Market price: ${marketPrice} JPYC`);
 
   try {
-    // ===== Round 1: Agent 1 が初回オファー =====
+    // ===== Round 1: Agent A が初回オファー =====
     // すぐに表示開始（AI応答を待たない）
-    transcript.push('[System] Agent 1 thinking about initial offer...');
-    transcript.push(`[Agent ${contextA.agentId}] [THINKING]`);
+    const agentALetter = agentIdToLetter(contextA.agentId);
+    const agentBLetter = agentIdToLetter(contextB.agentId);
     
-    const initialOfferPrompt = `You are Agent ${contextA.agentId}, a ${contextA.currentMission.type} vehicle in a traffic negotiation.
+    transcript.push(`[System] Agent ${agentALetter} thinking about initial offer...`);
+    transcript.push(`[Agent ${agentALetter}] [THINKING]`);
+    
+    const initialOfferPrompt = `You are Agent ${agentALetter}, a ${contextA.currentMission.type} vehicle in a traffic negotiation.
 
 MARKET CONTEXT:
 - Current market price for right-of-way at ${locationId}: ${marketPrice} JPYC
@@ -99,7 +107,7 @@ Example opening offers based on market price ${marketPrice}:
 Your initial offer (number with 2 decimal places, around 75-80% of market price):`;
 
     const initialOffer = await callAI(initialOfferPrompt);
-    console.log('[AI-to-AI] Agent 1 initial offer response:', initialOffer);
+    console.log(`[AI-to-AI] Agent ${agentALetter} initial offer response:`, initialOffer);
     
     let offerAmount = extractNumber(initialOffer);
     
@@ -132,23 +140,23 @@ Your initial offer (number with 2 decimal places, around 75-80% of market price)
       offerAmount,
       action: 'initial_offer',
     });
-    transcript.push(`[Agent ${contextA.agentId}] Initial offer: ${offerAmount} JPYC`);
+    transcript.push(`[Agent ${agentALetter}] Initial offer: ${offerAmount} JPYC`);
 
-    // ===== Round 2: Agent 2 が評価・応答 =====
+    // ===== Round 2: Agent B が評価・応答 =====
     let currentOffer = offerAmount;
     let negotiationRound = 1;
 
     while (negotiationRound <= maxRounds) {
       transcript.push(`[System] Negotiation round ${negotiationRound}...`);
-      transcript.push(`[Agent ${contextB.agentId}] [THINKING]`);
+      transcript.push(`[Agent ${agentBLetter}] [THINKING]`);
 
-      // Agent 2がオファーを評価
-      const evaluationPrompt = `You are Agent ${contextB.agentId}, a ${contextB.currentMission.type} tourist vehicle.
+      // Agent Bがオファーを評価
+      const evaluationPrompt = `You are Agent ${agentBLetter}, a ${contextB.currentMission.type} tourist vehicle.
 
 MARKET CONTEXT:
 - Current market price for right-of-way: ${marketPrice} JPYC
 - This is the fair market value everyone knows
-- Agent ${contextA.agentId} has offered ${currentOffer} JPYC
+- Agent ${agentALetter} has offered ${currentOffer} JPYC
 
 MARKET ANALYSIS:
 - Their offer is ${((currentOffer / marketPrice) * 100).toFixed(1)}% of market price
@@ -191,7 +199,7 @@ Respond EXACTLY in one of these formats:
 Your response:`;
 
       const response = await callAI(evaluationPrompt);
-      console.log('[AI-to-AI] Agent 2 response:', response);
+      console.log(`[AI-to-AI] Agent ${agentBLetter} response:`, response);
       
       const responseUpper = response.toUpperCase();
       
@@ -203,7 +211,7 @@ Your response:`;
           offerAmount: currentOffer,
           action: 'accept',
         });
-        transcript.push(`[Agent ${contextB.agentId}] Accepted at ${currentOffer} JPYC`);
+        transcript.push(`[Agent ${agentBLetter}] Accepted at ${currentOffer} JPYC`);
         
         // 決済実行
         await executePayment(contextA, contextB, currentOffer, locationId, transcript, network);
@@ -228,12 +236,12 @@ Your response:`;
           counterAmount = Math.round(counterAmount * 100) / 100;
         }
         
-        transcript.push(`[Agent ${contextB.agentId}] Counter-offer: ${counterAmount} JPYC`);
+        transcript.push(`[Agent ${agentBLetter}] Counter-offer: ${counterAmount} JPYC`);
 
-        // Agent 1がカウンターオファーを評価
-        transcript.push(`[Agent ${contextA.agentId}] [THINKING]`);
+        // Agent Aがカウンターオファーを評価
+        transcript.push(`[Agent ${agentALetter}] [THINKING]`);
         
-        const buyerResponsePrompt = `You are Agent ${contextA.agentId} (Buyer) continuing negotiation.
+        const buyerResponsePrompt = `You are Agent ${agentALetter} (Buyer) continuing negotiation.
 
 MARKET CONTEXT:
 - Market price: ${marketPrice} JPYC
@@ -282,7 +290,7 @@ Your response:`;
             offerAmount: counterAmount,
             action: 'accept',
           });
-          transcript.push(`[Agent ${contextA.agentId}] ✅ Accepted at ${counterAmount} JPYC`);
+          transcript.push(`[Agent ${agentALetter}] ✅ Accepted at ${counterAmount} JPYC`);
 
           await executePayment(contextA, contextB, counterAmount, locationId, transcript, network);
 
@@ -293,13 +301,13 @@ Your response:`;
             transcript,
           };
         } else if (buyerResponse.includes('COUNTER')) {
-          // Agent 1からの新しいカウンターオファー
+          // Agent Aからの新しいカウンターオファー
           let newOffer = extractNumber(buyerResponse);
           
           if (!newOffer || newOffer < 100 || newOffer > 1000) {
             // フォールバック: 相場に近い中間値
             newOffer = Number.parseFloat(((currentOffer + counterAmount) / 2).toFixed(2));
-            console.warn('[AI-to-AI] Invalid counter from A, using middle ground:', newOffer);
+            console.warn(`[AI-to-AI] Invalid counter from Agent ${agentALetter}, using middle ground:`, newOffer);
           } else {
             // 小数点2桁に丸める
             newOffer = Math.round(newOffer * 100) / 100;
@@ -313,16 +321,16 @@ Your response:`;
             offerAmount: currentOffer,
             action: 'counter_offer',
           });
-          transcript.push(`[Agent ${contextA.agentId}] Counter-offer: ${currentOffer} JPYC`);
+          transcript.push(`[Agent ${agentALetter}] Counter-offer: ${currentOffer} JPYC`);
           negotiationRound++;
         } else {
           // Reject
-          transcript.push(`[Agent ${contextA.agentId}] ❌ Rejected`);
+          transcript.push(`[Agent ${agentALetter}] ❌ Rejected`);
           break;
         }
       } else {
         // Reject
-        transcript.push(`[Agent ${contextB.agentId}] ❌ Rejected offer`);
+        transcript.push(`[Agent ${agentBLetter}] ❌ Rejected offer`);
         break;
       }
     }

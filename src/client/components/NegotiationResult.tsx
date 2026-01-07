@@ -6,8 +6,8 @@ import { CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 interface NegotiationResultProps {
   result: {
     success?: boolean;
-    buyer?: { agentId: number; wallet?: string } | null;
-    seller?: { agentId: number; wallet?: string } | null;
+    buyer?: { agentId: string; wallet?: string } | null;
+    seller?: { agentId: string; wallet?: string } | null;
     agreedPrice?: number | null;
     transcript?: string[];
     isNegotiating?: boolean; // 新規: ネゴシエーション中フラグ
@@ -81,8 +81,8 @@ export function NegotiationResult({ result }: NegotiationResultProps) {
                 {result.transcript.map((line, i) => {
                   const isError = line.includes('[Error]');
                   const isSystem = line.includes('[System]');
-                  const isAgent1 = line.includes('[Agent 1]');
-                  const isAgent2 = line.includes('[Agent 2]');
+                  const isAgentA = line.includes('[Agent A]');
+                  const isAgentB = line.includes('[Agent B]');
                   
                   // トランザクションハッシュを検出してリンク化
                   const txMatch = line.match(/0x[a-fA-F0-9]{64}/);
@@ -119,9 +119,9 @@ export function NegotiationResult({ result }: NegotiationResultProps) {
                           ? 'text-red-400'
                           : isSystem
                             ? 'text-cyan-400'
-                            : isAgent1
+                            : isAgentA
                               ? 'text-green-400'
-                              : isAgent2
+                              : isAgentB
                                 ? 'text-pink-400'
                                 : 'text-gray-500'
                       }`}

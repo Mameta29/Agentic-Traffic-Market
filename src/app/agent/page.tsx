@@ -116,12 +116,12 @@ export default function AgentDashboard() {
       }));
       
       // System/Agent メッセージを適切なターミナルに表示
-      if (data.message.includes('[Agent 1]')) {
+      if (data.message.includes('[Agent A]')) {
         setAgent1Messages((prev) => [...prev, {
           role: 'assistant',
           content: data.message
         }]);
-      } else if (data.message.includes('[Agent 2]')) {
+      } else if (data.message.includes('[Agent B]')) {
         setAgent2Messages((prev) => [...prev, {
           role: 'assistant',
           content: data.message
@@ -136,9 +136,11 @@ export default function AgentDashboard() {
 
     eventSource.addEventListener('turn', (event) => {
       const data = JSON.parse(event.data);
+      // speakerを 'A' または 'B' に変換
+      const agentLetter = data.speaker === 1 ? 'A' : 'B';
       const message = {
         role: 'assistant',
-        content: `[Agent ${data.speaker}] ${data.message}`,
+        content: `[Agent ${agentLetter}] ${data.message}`,
       };
 
       // Speaker によってメッセージを振り分け
@@ -157,8 +159,8 @@ export default function AgentDashboard() {
         ...prev,
         isNegotiating: false,
         success: data.success,
-        buyer: { agentId: 1 },
-        seller: { agentId: 2 },
+        buyer: { agentId: 'A' },
+        seller: { agentId: 'B' },
         agreedPrice: data.finalPrice,
         transcript: data.transcript, // 最終的な完全なtranscriptを使用
       }));
