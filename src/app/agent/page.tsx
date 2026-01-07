@@ -327,14 +327,14 @@ export default function AgentDashboard() {
               <div className="min-h-[400px]">
                 <ThinkingTerminal
                   messages={agent1Messages}
-                  agentName="Agent 1"
+                  agentName="Agent A"
                   agentRole="buyer"
                 />
               </div>
               <div className="min-h-[400px]">
                 <ThinkingTerminal
                   messages={agent2Messages}
-                  agentName="Agent 2"
+                  agentName="Agent B"
                   agentRole="seller"
                 />
               </div>
